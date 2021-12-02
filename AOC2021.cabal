@@ -6,12 +6,12 @@ cabal-version: 1.12
 
 name:           AOC2021
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/AOC2021#readme>
-homepage:       https://github.com/githubuser/AOC2021#readme
-bug-reports:    https://github.com/githubuser/AOC2021/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2021 Author name here
+description:    Please see the README on GitHub at <https://github.com/b1g3ar5/AOC2021/blob/master/README.md>
+homepage:       https://github.com/b1g3ar5/AOC2021.git#readme
+bug-reports:    https://github.com/b1g3ar5/AOC2021.git/issues
+author:         Nick Straw
+maintainer:     nick@broxholme.com
+copyright:      2021 Nick Straw
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/AOC2021
+  location: https://github.com/b1g3ar5/AOC2021.git
 
 library
   exposed-modules:
@@ -56,13 +56,29 @@ library
       Paths_AOC2021
   hs-source-dirs:
       src
+  default-extensions:
+      ViewPatterns, TupleSections, GADTs, BangPatterns, RankNTypes, TypeApplications, PolyKinds, StandaloneKindSignatures, ExistentialQuantification, TypeOperators, ConstraintKinds, DeriveFoldable, DeriveFunctor, DeriveTraversable, StandaloneDeriving, GeneralisedNewtypeDeriving, DeriveGeneric
   build-depends:
-      base
+      Clever
+    , Useful
+    , adjunctions
+    , base
+    , comonad
     , containers
+    , data-fix
+    , distributive
+    , hashable
+    , mtl
+    , semirings
+    , sort
     , split
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
     , timeit
     , unordered-containers
     , vector
+    , vector-space
   default-language: Haskell2010
 
 executable AOC2021-exe
@@ -71,15 +87,31 @@ executable AOC2021-exe
       Paths_AOC2021
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  default-extensions:
+      ViewPatterns, TupleSections, GADTs, BangPatterns, RankNTypes, TypeApplications, PolyKinds, StandaloneKindSignatures, ExistentialQuantification, TypeOperators, ConstraintKinds, DeriveFoldable, DeriveFunctor, DeriveTraversable, StandaloneDeriving, GeneralisedNewtypeDeriving, DeriveGeneric
+  ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       AOC2021
+    , Clever
+    , Useful
+    , adjunctions
     , base
+    , comonad
     , containers
+    , data-fix
+    , distributive
+    , hashable
+    , mtl
+    , semirings
+    , sort
     , split
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
     , timeit
     , unordered-containers
     , vector
+    , vector-space
   default-language: Haskell2010
 
 test-suite AOC2021-test
@@ -89,13 +121,29 @@ test-suite AOC2021-test
       Paths_AOC2021
   hs-source-dirs:
       test
+  default-extensions:
+      ViewPatterns, TupleSections, GADTs, BangPatterns, RankNTypes, TypeApplications, PolyKinds, StandaloneKindSignatures, ExistentialQuantification, TypeOperators, ConstraintKinds, DeriveFoldable, DeriveFunctor, DeriveTraversable, StandaloneDeriving, GeneralisedNewtypeDeriving, DeriveGeneric
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       AOC2021
+    , Clever
+    , Useful
+    , adjunctions
     , base
+    , comonad
     , containers
+    , data-fix
+    , distributive
+    , hashable
+    , mtl
+    , semirings
+    , sort
     , split
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
     , timeit
     , unordered-containers
     , vector
+    , vector-space
   default-language: Haskell2010

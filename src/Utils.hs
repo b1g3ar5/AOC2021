@@ -26,7 +26,7 @@ module Utils (
   , neighbours
   , span
   , race
-  , fixpoint
+  , converge
 )
 where
 
@@ -88,10 +88,10 @@ fix f = x where x = f x
 
 
 -- Should this just call fix somehow?
-fixpoint :: Eq a => (a -> a) -> a -> a
-fixpoint f x 
-  | x ==fx = fx
-  | otherwise = fixpoint f fx
+converge :: Eq a => (a -> a) -> a -> a
+converge f x 
+  | x == fx = fx
+  | otherwise = converge f fx
   where
     fx = f x
 
@@ -106,7 +106,6 @@ race isFinished isOk x next
   | otherwise = race isFinished isOk nxt next
   where
     nxt = next x
-
 
 
 ------------------- BOOLEAN / BINARY TO/FROM INT

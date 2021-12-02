@@ -1,23 +1,18 @@
 name:                AOC2021
 version:             0.1.0.0
-github:              "githubuser/AOC2021"
+github:              "b1g3ar5/AOC2021.git"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2021 Author name here"
+author:              "Nick Straw"
+maintainer:          "nick@broxholme.com"
+copyright:           "2021 Nick Straw"
+
+default-extensions: ViewPatterns, TupleSections, GADTs, BangPatterns, RankNTypes, TypeApplications, PolyKinds, StandaloneKindSignatures, ExistentialQuantification, TypeOperators, ConstraintKinds, DeriveFoldable, DeriveFunctor, DeriveTraversable, StandaloneDeriving, GeneralisedNewtypeDeriving, DeriveGeneric
 
 extra-source-files:
 - README.md
 - ChangeLog.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/AOC2021#readme>
+description: Please see the README on GitHub at <https://github.com/b1g3ar5/AOC2021/blob/master/README.md>
 
 dependencies:
 - base
@@ -26,6 +21,20 @@ dependencies:
 - unordered-containers
 - vector
 - split
+- Clever
+- mtl
+- comonad
+- sort
+- tasty
+- tasty-quickcheck
+- tasty-hunit
+- data-fix
+- semirings
+- hashable
+- adjunctions
+- distributive
+- vector-space
+- Useful
 
 library:
   source-dirs: src
@@ -35,6 +44,8 @@ executables:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
+    - -Wall
+    - -Werror
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
