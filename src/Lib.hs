@@ -35,7 +35,7 @@ libMain :: IO ()
 libMain = do
   timeIt day1
   timeIt day2
-  --timeIt day3
+  timeIt day3
   --timeIt day4
   --timeIt day5
   --timeIt day6

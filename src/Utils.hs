@@ -6,7 +6,6 @@ module Utils (
   getLines
   , getRaw
   , getWords
-  , getParagraphs
   , splitOn
   , toInt
   , fromInt
@@ -18,7 +17,8 @@ module Utils (
   , intersections
   , clockTurn
   , antiTurn
-  , directions
+  , directions8
+  , directions4
   , leftOf
   , rightOf
   , above
@@ -46,6 +46,7 @@ import Data.Maybe
 import Control.Monad
 import Control.Monad.ST (runST, ST(..))
 import System.TimeIt ( timeIt )
+import Data.Semigroup (Semigroup)
 
 --- Things to add
 
@@ -70,10 +71,6 @@ getWords = getF words
 
 getLines :: Int -> IO [String]
 getLines = getF lines
-
-
-getParagraphs :: Int -> IO [[String]]
-getParagraphs = getF (filter (/=[]) . splitOnChar "" . lines)
 
 
 ------------------ VARIOUS UTILITY FUNCTIONS --------------------
@@ -132,21 +129,17 @@ pad n b bs = replicate (fromIntegral n - length bs) b ++ take (fromIntegral n) b
 
 
 
--- Like words but you specify the character
-splitOnChar :: Eq a => a -> [a] -> [[a]]
-splitOnChar c = reverse . go []
+-- Like words but you specify the character - very slow, I expect
+splitOnChar :: Char -> String -> [String]
+splitOnChar c s = (go <$>) <$> words tc
   where
-    go acc [] = acc
-    go [] (x:xs)
-      | x==c = go [] xs
-      | otherwise = go [[x]] xs
-    go acc@(w:ws) (x:xs)
-      | x==c = go ([]:acc) xs
-      | otherwise = go ((w++[x]):ws) xs
-
-
---splitOnStr :: Eq a => [a] -> [a] -> [[a]]
---splitOnStr = splitOn
+    -- turn c into space and space into c
+    go :: Char -> Char
+    go x
+      | x == c = ' '
+      | x == ' ' = c
+      | otherwise = x
+    tc = go <$> s
 
 
 ------------------------ COORDINATE / VECTOR STUFF ------------
@@ -168,6 +161,7 @@ instance Num Coord where
 
 manhattan :: Coord -> Coord -> Int
 manhattan (x1, y1) (x2, y2) = abs (x1 - x2) +  abs (y1 - y2)
+
 
 euclidian :: Coord -> Coord -> Double
 euclidian (x1, y1) (x2, y2) = sqrt $ fromIntegral ((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2))
@@ -200,9 +194,11 @@ allCoords :: Int -> Int -> [Coord]
 allCoords rows cols = concat $ (\c -> (c,) <$> [0..(rows-1)]) <$> [0..(cols-1)]
 
 
+directions8 :: [Coord]
+directions8 = [(0, -1), (0, 1), (1, 0), (-1, 0), (1, -1), (1, 1), (-1, 1), (-1, -1)]
 
-directions :: [Coord]
-directions = [(0, -1), (0, 1), (1, 0), (-1, 0), (1, -1), (1, 1), (-1, 1), (-1, -1)]
+directions4 :: [Coord]
+directions4 = [(0, -1), (0, 1), (1, 0), (-1, 0)]
 
 
 -- Coordinate start at top left, so y goes up as you go down

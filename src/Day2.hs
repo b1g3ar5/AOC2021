@@ -8,12 +8,11 @@ import Utils
 data Move = Fw Int | Dn Int | Up Int deriving (Show, Eq)
 
 
-type Pos = (Int, Int)
 type Aim = Int
-type State = (Pos, Aim)
+type State = (Coord, Aim)
 
 
-move1 :: Pos -> Move -> Pos
+move1 :: Coord -> Move -> Coord
 move1 (x,y) (Fw z) = (x+z,y)
 move1 (x,y) (Dn z) = (x,y+z)
 move1 (x,y) (Up z) = (x,y-z)
