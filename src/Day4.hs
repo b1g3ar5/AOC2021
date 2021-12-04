@@ -3,14 +3,25 @@ module Day4 where
 
 import Data.Map.Strict (Map)
 import qualified Data.Map as M
-import Utils (getLines, Coord, chunksOf)
+import Utils (getLines, Coord, chunksOf, first)
 
 
 type Board a = Map Coord a
 
 
+parseBoard :: [String] -> Board Int
+parseBoard = go 0 M.empty
+  where
+    go :: Int -> Board Int -> [String] -> Board Int
+    go n b [] = b
+    go n b ls = go (n+1) (M.union b (M.fromList $ zip ((n,) <$> [0..]) ns)) $ tail ls
+      where
+        ns :: [Int]
+        ns = read <$> words (head ls)
+
+
 isFinished :: Board (Bool, a) -> Bool
-isFinished b = or $ concat $ (\x -> [rowIsFinished x, colIsFinished x]) <$> [0..4]
+isFinished b = or $ [rowIsFinished, colIsFinished] <*> [0..4]
   where
     rowIsFinished :: Int -> Bool
     rowIsFinished n = and $ fst . (b M.!) . (,n) <$> [0..4]
@@ -19,16 +30,18 @@ isFinished b = or $ concat $ (\x -> [rowIsFinished x, colIsFinished x]) <$> [0..
 
 
 mark :: Eq a => a -> Board (Bool, a) -> Board (Bool,a)
-mark x = M.map (\(p,y) -> if y==x then (True,y) else (p,y))
+mark x = M.map (\(p,y) -> ((y==x) || p,y))
 
 
 play1 :: [Int] -> [Board (Bool, Int)] -> Int
 play1 [] _ = error "We ran out of numbers"
 play1 (n:ns) bs
-  | any isFinished newBs = score n $ head $ filter isFinished newBs
+  | not . null $ finished = score n $ head finished
   | otherwise = play1 ns newBs
   where
     newBs = mark n <$> bs
+    finished = filter isFinished newBs
+
 
 play2 :: [Int] -> [Board (Bool, Int)] -> Int
 play2 [] _ = error "We ran out of numbers"
@@ -55,15 +68,3 @@ day4 = do
   putStrLn $ "Day4: part2: " ++ show (play2 numbers boards)
   return ()
 
-
-parseBoard :: [String] -> Board Int
-parseBoard = go 0 M.empty
-  where
-    go :: Int -> Board Int -> [String] -> Board Int
-    go n b ls
-      | null ls = b
-      | n==5 = b
-      | otherwise = go (n+1) (M.union b (M.fromList $ zip ((n,) <$> [0..]) ns)) $ tail ls
-      where
-        ns :: [Int]
-        ns = read <$> words (head ls)

@@ -2,7 +2,7 @@
 module Day2 where
 
 
-import Utils
+import Utils (getLines, Coord)
 
 
 data Move = Fw Int | Dn Int | Up Int deriving (Show, Eq)
