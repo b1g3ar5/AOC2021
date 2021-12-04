@@ -27,6 +27,10 @@ module Utils (
   , span
   , race
   , converge
+  , chunksOf
+  , first
+  , second
+  , bimap
 )
 where
 

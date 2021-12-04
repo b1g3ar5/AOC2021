@@ -89,7 +89,7 @@ executable AOC2021-exe
       app
   default-extensions:
       ViewPatterns, TupleSections, GADTs, BangPatterns, RankNTypes, TypeApplications, PolyKinds, StandaloneKindSignatures, ExistentialQuantification, TypeOperators, ConstraintKinds, DeriveFoldable, DeriveFunctor, DeriveTraversable, StandaloneDeriving, GeneralisedNewtypeDeriving, DeriveGeneric
-  ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -O2 -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       AOC2021
     , Clever

@@ -45,6 +45,7 @@ executables:
     source-dirs:         app
     ghc-options:
     - -Wall
+    - -O2
     - -Werror
     - -threaded
     - -rtsopts
