@@ -33,11 +33,11 @@ import Day25
 
 libMain :: IO ()
 libMain = do
-  timeIt day1
-  timeIt day2
-  timeIt day3
-  timeIt day4
-  --timeIt day5
+  --timeIt day1
+  --timeIt day2
+  --timeIt day3
+  --timeIt day4
+  timeIt day5 -- SLOW takes aout a minute. It's integer line intersections
   --timeIt day6
   --timeIt day7
   --timeIt day8
