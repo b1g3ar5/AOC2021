@@ -6,12 +6,9 @@ import qualified Data.Map as M
 import Utils (splitOn, getLines)
 
 
-type Fish = Int
-
-
 run :: Int -> [Int] -> Int
-run 0 counts = sum counts
-run days counts = run (days-1) $ go counts
+run 0 freqs = sum freqs
+run days freqs = run (days-1) $ go freqs
   where
     go :: [Int] -> [Int]
     go [] = error "This should be impossible"
@@ -21,12 +18,11 @@ run days counts = run (days-1) $ go counts
 day6 :: IO ()
 day6 = do
   inLines <- getLines 6
-  let fish :: [Fish]
+  let fish :: [Int]
       fish = read <$> splitOn "," (head inLines)
-      -- Count the incidences of each fish-life and add on missing life spans
       counts :: [Int]
-      counts = 0:(length <$> group (sort fish)) ++ [0,0,0]
-  putStrLn $ "Day6: part1: " ++ show (run 80 counts) -- 361169
-  putStrLn $ "Day6: part1: " ++ show (run 256 counts) -- 1634946868992
+      counts = (\i -> length $ filter (==i) fish) <$> [0..8]
+  putStrLn $ "Day6: part1: " ++ show (run 80 counts) -- 361,169
+  putStrLn $ "Day6: part2: " ++ show (run 256 counts) -- 1,634,946,868,992
 
   return ()
