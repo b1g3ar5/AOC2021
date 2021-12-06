@@ -37,8 +37,8 @@ libMain = do
   --timeIt day2
   --timeIt day3
   --timeIt day4
-  timeIt day5 -- SLOW takes aout a minute. It's integer line intersections
-  --timeIt day6
+  --timeIt day5 
+  timeIt day6
   --timeIt day7
   --timeIt day8
   --timeIt day9

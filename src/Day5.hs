@@ -39,14 +39,12 @@ parseLine s = ((read $ head p1, read $ p1!!1), (read $ head p2, read $ p2!!1))
 
 
 findIntersections :: [Line] -> Int
-findIntersections ls = length $ filter (\g -> length g > 1) $ group $ sort $ concat $ toCoord <$> ls
-
+findIntersections ls = length $ filter ((1 <) . length) $ group $ sort $ concat $ toCoord <$> ls
 
 
 day5 :: IO ()
 day5 = do
   inLines <- getLines 5
-  --let inLines = test
   let ls = parseLine <$> inLines
       os = filter isOrthogonal ls
 
