@@ -3,6 +3,7 @@ module Day7 where
 
 
 import Utils (getLines, splitOn)
+import Data.List (sort)
 
 
 type Crab = Int
@@ -12,22 +13,19 @@ parseCrabs :: String -> [Crab]
 parseCrabs s = read <$> splitOn "," s
 
 
-align1 :: [Crab] -> Int
-align1 cs = go 500
+median :: [a] -> a
+median xs = if even len then xs!!l2 else xs!!(l2+1)
   where
-    go :: Int -> Int
-    go n
-      | bigger > (smaller + equal) = go (n+1)
-      | smaller > (bigger + equal) = go (n-1)
-      | otherwise = sum $ (\c -> abs (c-n)) <$> cs
-      where
-        bigger = length $ filter (>n) cs
-        smaller = length $ filter (<n) cs
-        equal = length $ filter (==n) cs
+    len = length xs
+    l2 = len `div` 2
 
 
-align2 :: [Crab] -> Int
-align2 cs = go 500
+mean :: Foldable t => t Int -> Int
+mean xs = sum xs `div` length xs
+
+
+align :: (Int -> Int) -> [Crab] -> Int
+align metric cs = go 500
   where
     go :: Int -> Int
     go n
@@ -35,26 +33,24 @@ align2 cs = go 500
       | upFuel > dnFuel = go (n-1)
       | otherwise = go (n+1)
       where
-        fuel = fuel2 n cs
-        upFuel = fuel2 (n+1) cs
-        dnFuel = fuel2 (n-1) cs
+        fuel = fuelCalc metric n cs
+        upFuel = fuelCalc metric (n+1) cs
+        dnFuel = fuelCalc metric (n-1) cs
 
 
-fuel2 :: Int -> [Crab] -> Int
-fuel2 n cs = sum $ go <$> cs
-  where
-    go c = d * (d+1) `div` 2
-      where
-        d = abs (c-n)
+fuelCalc :: (Int -> Int) -> Int -> [Crab] -> Int
+fuelCalc metric n cs = sum $ (\c -> metric $ abs (c-n)) <$> cs 
 
 
 day7 :: IO ()
 day7 = do
   inLines <- getLines 7
   let cs :: [Crab]
-      cs = parseCrabs $ head inLines
-  putStrLn $ "Day7: part1: " ++ show (align1 cs)
-  putStrLn $ "Day7: part2: " ++ show (align2 cs) 
+      cs = sort $ parseCrabs $ head inLines
+  putStrLn $ "Day7: part1: " ++ show (fuelCalc id (median cs) cs)
+  putStrLn $ "Day7: part2: " ++ show (fuelCalc (\x -> x*(x+1)`div`2) (mean cs) cs)
+  putStrLn $ "Day7: part1: " ++ show (align id cs) 
+  putStrLn $ "Day7: part2: " ++ show (align (\x -> x*(x+1)`div`2) cs) 
 
   return ()
 
