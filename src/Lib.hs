@@ -38,8 +38,8 @@ libMain = do
   --timeIt day3
   --timeIt day4
   --timeIt day5 
-  timeIt day6
-  --timeIt day7
+  --timeIt day6
+  timeIt day7
   --timeIt day8
   --timeIt day9
   --timeIt day10

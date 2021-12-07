@@ -69,6 +69,7 @@ library
     , distributive
     , hashable
     , mtl
+    , multiset
     , semirings
     , sort
     , split
@@ -102,6 +103,7 @@ executable AOC2021-exe
     , distributive
     , hashable
     , mtl
+    , multiset
     , semirings
     , sort
     , split
@@ -136,6 +138,7 @@ test-suite AOC2021-test
     , distributive
     , hashable
     , mtl
+    , multiset
     , semirings
     , sort
     , split

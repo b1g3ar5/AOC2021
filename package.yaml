@@ -35,6 +35,7 @@ dependencies:
 - distributive
 - vector-space
 - Useful
+- multiset
 
 library:
   source-dirs: src
