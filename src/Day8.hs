@@ -37,7 +37,8 @@ numbers = ["abcefg", "cf", "acdeg", "acdfg", "bcdf", "abdfg", "abdefg", "acf", "
 valid :: String -> Bool
 valid = (`elem` numbers)
 
--- converts a list of digits which are the hundreds, tens and units to a number
+-- converts a list of digits which are the hundreds, tens and units the 
+-- number they represent
 convert :: [Int] -> Int
 convert is = read $ concat $ show <$> is
 
