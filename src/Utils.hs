@@ -31,6 +31,8 @@ module Utils (
   , first
   , second
   , bimap
+  , fromMaybe
+  , catMaybes
 )
 where
 
