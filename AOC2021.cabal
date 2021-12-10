@@ -51,6 +51,7 @@ library
       Day8
       Day9
       Lib
+      Search
       Utils
   other-modules:
       Paths_AOC2021

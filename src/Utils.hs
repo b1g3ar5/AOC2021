@@ -33,6 +33,7 @@ module Utils (
   , bimap
   , fromMaybe
   , catMaybes
+  , sort
 )
 where
 
