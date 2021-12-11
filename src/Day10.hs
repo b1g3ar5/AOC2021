@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances#-}
 
 module Day10 where
 

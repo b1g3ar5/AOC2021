@@ -12,7 +12,8 @@ module Utils (
   , pad
   , Coord
   , allCoords
-  , neighbourCoords
+  , neighbourCoords4
+  , neighbourCoords8
   , splitAt
   , intersections
   , clockTurn
@@ -23,7 +24,8 @@ module Utils (
   , rightOf
   , above
   , below
-  , neighbours
+  , neighbours4
+  , neighbours8
   , span
   , race
   , converge
@@ -34,6 +36,10 @@ module Utils (
   , fromMaybe
   , catMaybes
   , sort
+  , sortOn
+  , transpose
+  , steadyState
+  , swap
 )
 where
 
@@ -180,12 +186,21 @@ antiTurn :: Coord -> Coord
 antiTurn (x, y) = (y, -x)
 
 
-neighbourCoords :: [Coord]
-neighbourCoords = [(x, y) | x <- [-1, 0, 1], y <- [-1, 0, 1], (x, y) /= (0, 0)]
+neighbourCoords4 :: [Coord]
+neighbourCoords4 = [(1,0), (-1,0), (0,1), (0,-1)]
 
 
-neighbours :: Coord -> [Coord]
-neighbours c = neighbourCoords `at` c
+neighbourCoords8 :: [Coord]
+neighbourCoords8 = [(x, y) | x <- [-1, 0, 1], y <- [-1, 0, 1], (x, y) /= (0, 0)]
+
+
+neighbours4 :: Coord -> [Coord]
+neighbours4 c = neighbourCoords4 `at` c
+
+
+neighbours8 :: Coord -> [Coord]
+neighbours8 c = neighbourCoords8 `at` c
+
 
 
 at :: [Coord] -> Coord -> [Coord]
@@ -214,3 +229,7 @@ leftOf x = x + (-1,0)
 rightOf x = x + (1,0)
 above x = x + (0,-1)
 below x = x + (0,1)
+
+
+steadyState :: Eq a => (a -> a) -> a -> a
+steadyState f x = if f x == x then x else steadyState f (f x)
