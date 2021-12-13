@@ -29,7 +29,17 @@ import Day22
 import Day23
 import Day24
 import Day25
+import qualified Data.Functor as Projects
 
+{-
+Projects...
+
+Monadic version if Day10
+Sort out a grid for Day 11 - comonad? Fixed size?
+Generalise the DFS on day 12 for Utils
+Day12 as a hylomorphism?
+
+-}
 
 libMain :: IO ()
 libMain = do
@@ -44,8 +54,8 @@ libMain = do
   --timeIt day9
   --timeIt day10
   --timeIt day11
-  timeIt day12
-  --timeIt day13
+  --timeIt day12
+  timeIt day13
   --timeIt day14
   --timeIt day15
   --timeIt day16

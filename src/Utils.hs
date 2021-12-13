@@ -40,6 +40,13 @@ module Utils (
   , transpose
   , steadyState
   , swap
+  , (\\)
+  , toLower
+  , toUpper
+  , isAsciiLower
+  , isAsciiUpper
+  , intercalate 
+  , nub
 )
 where
 
@@ -56,6 +63,7 @@ import Data.List.Split
 import Data.Bifunctor
 import Data.Tuple
 import Data.Maybe
+import Data.Char
 import Control.Monad
 import Control.Monad.ST (runST, ST(..))
 import System.TimeIt ( timeIt )

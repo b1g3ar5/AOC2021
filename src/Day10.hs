@@ -22,25 +22,27 @@ parseBracket '>' = (False, Angle)
 parseBracket c = error $ "Not a bracket: " ++ show [c]
 
 
-data ParseOutcome a = Corrupt a | Unfinished [a] | Valid deriving (Eq, Show)
+data Parsed a = Corrupt a | Unfinished [a] | Valid deriving (Eq, Show)
 
 
-isCorrupt :: ParseOutcome a -> Bool
+isCorrupt :: Parsed a -> Bool
 isCorrupt (Corrupt _) = True
 isCorrupt _ = False
 
 
-parseString :: String -> ParseOutcome (IsOpening, Bracket)
+parseString :: String -> Parsed (IsOpening, Bracket)
 parseString = go []
   where
     go [] [] = Valid
     go acc [] = Unfinished acc
     go acc (b:bs)
-      | b `elem` "({[<" = go (parseBracket b:acc) bs
-      | b `elem` ")]}>" = if head acc == first not pb then go (tail acc) bs else Corrupt (parseBracket b)
+      | b `elem` "({[<" = go (pb:acc) bs
+      | b `elem` ")]}>" = if head acc == first not pb then go (tail acc) bs else Corrupt pb
       | otherwise  = error $ "Cannot parse b: " ++ [b]
       where
         pb = parseBracket b
+
+
 
 
 cost1 :: Bracket -> Int
@@ -76,11 +78,66 @@ day10 :: IO ()
 day10 = do
   ls <- getLines 10
   let ps = sort $ filter (/=0) $ score2 <$> ls
+      ps' = sort $ filter (/=0) $ score2' <$> ls
       n2 = length ps `div` 2
 
   putStrLn $ "Day10: part1: " ++ show (sum $ score1 <$> ls)
+  putStrLn $ "Day10: part1: " ++ show (sum $ score1' <$> ls)
   putStrLn $ "Day10: part2: " ++ show (ps !! n2)
+  putStrLn $ "Day10: part2: " ++ show (ps' !! n2)
 
   return ()
+
+
+
+op :: Char -> Char
+op '(' = ')'
+op '[' = ']'
+op '{' = '}'
+op '<' = '>'
+op ')' = '('
+op ']' = '['
+op '}' = '{'
+op '>' = '<'
+op _ = error "Not bracket"
+
+
+parseString' :: String -> [Char]
+parseString' = go []
+  where
+    go [] [] = []
+    go acc [] = acc
+    go acc (b:bs)
+      | b `elem` "({[<" = go (b:acc) bs
+      | b `elem` ")]}>" = if head acc == op b then go (tail acc) bs else [b]
+      | otherwise  = error $ "Cannot parse b: " ++ [b]
+
+
+score1' :: String -> Int
+score1' (parseString' -> [b]) = cost1' b
+score1' _ = 0
+
+
+cost1' :: Char -> Int
+cost1' ')' = 3
+cost1' ']' = 57
+cost1' '}' = 1197
+cost1' '>' = 25137
+cost1' _ = error "Not a bracket"
+
+
+score2' :: String -> Int
+score2' (parseString' -> t) = if length t == 1 then 0 else go 0 t
+  where
+    go n [] = n
+    go n (c:cs) = go (5*n + cost2' c) cs
+
+
+cost2' :: Char -> Int
+cost2' '(' = 1
+cost2' '[' = 2
+cost2' '{' = 3
+cost2' '<' = 4
+cost2' c = error $ "Not a bracket" ++ [c]
 
 
