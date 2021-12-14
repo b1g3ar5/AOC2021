@@ -61,92 +61,117 @@ generatePaths isPart1 start end g = map reverse $ dfs isPart1 [] [[]] start
 day12 :: IO ()
 day12 = do
   ls <- getLines 12
+  let ls = test'
   let graph = mkGraph $ parseEdge <$> ls
   putStrLn $ "Day12: part1: " ++ show (length $ generatePaths True "start" "end" graph )
-  putStrLn $ "Day12: part2: " ++ show (length $ generatePaths False "start" "end" graph)
+  putStrLn $ "Day12: part2: " ++ unlines (sort $ show <$> generatePaths False "start" "end" graph)
 
-  let t = mkTree graph  
-  putStrLn $ "Tree: " ++ printTree t
-  --putStrLn $ "Tree: " ++ show (paths t)
+  -- Hylomorphism version
+  putStrLn $ "Tree: " ++ show (length $ filter (\p -> last p == "end") $ hylo pathAlg makeCoalg ("start", [], graph))
+  putStrLn $ "Tree: " ++ show (length $ filter (\p -> last p == "end") $ hylo pathAlg makeCoalg' ("start", [], graph, True))
+  --putStrLn $ "Tree:\n" ++ unlines (sort $ filter (\p -> last p == 'd') $ hylo renderAlg makeCoalg' ("start", [], graph, True))
 
   return ()
 
 
+test = ["start-A"
+  , "start-b"
+  , "A-c"
+  , "A-b"
+  , "b-d"
+  , "A-end"
+  , "b-end"]
+
+test' = ["dc-end"
+  , "HN-start"
+  , "start-kj"
+  , "dc-start"
+  , "dc-HN"
+  , "LN-dc"
+  , "HN-end"
+  , "kj-sa"
+  , "kj-HN"
+  , "kj-dc"]
+
 newtype Fix f = Fix { unFix :: f (Fix f) } 
 type Algebra f a = f a -> a
 type Coalgebra f a = (a -> f a)
-ana :: Functor f => Coalgebra f a -> a -> Fix f
-ana coalg = Fix . fmap (ana coalg) . coalg
+type CVCoalgebra f a = a -> f (Either (Fix f) a)
+
+
 cata :: Functor f => Algebra f a -> Fix f -> a
 cata alg = alg . fmap (cata alg) . unFix
+ana :: Functor f => Coalgebra f a -> a -> Fix f
+ana coalg = Fix . fmap (ana coalg) . coalg
+
 hylo :: Functor f => Algebra f a -> Coalgebra f b -> b -> a
 hylo f g = f . fmap (hylo f g) . g
-fix :: (a -> a) -> a
-fix f = let {x = f x} in x
 
-data ListF a x = NilF | ConsF a x deriving (Show, Functor)
-type List a = Fix (ListF a)
+apo :: Functor f => CVCoalgebra f a -> a -> Fix f
+apo f = Fix . fmap (either id (apo f)) . f
 
 
-lengthAlgebra :: ListF a Int -> Int
-lengthAlgebra NilF        = 0
-lengthAlgebra (ConsF _ n) = n + 1
+--fix :: (a -> a) -> a
+--fix f = let {x = f x} in x
 
 
-coAlg :: Coalgebra (ListF Int) [Int] -- [Int] -> ListF Int [Int]
-coAlg [] = NilF
-coAlg (n:ns) = ConsF n ns -- Here the ns is an [Int] because it's a list
-
-
-algMain :: IO ()
-algMain = do
-  let ls = [1,2,3,4,5,6]
-      p = ana coAlg ls
-  putStrLn $ "p: " ++ show (cata lengthAlgebra p)
-  putStrLn $ "p: " ++ show (hylo lengthAlgebra coAlg ls)
-
-
-generatePaths' :: Node -> Node -> Graph -> [[Node]]
-generatePaths' start end g = map reverse $ dfs [] [[]] start
-  where
-    dfs :: [Node] -> [[Node]] -> Node -> [[Node]]
-    dfs visited acc next
-      | next == end = map (next :) acc -- add end to all the paths
-      | next == start && not (null visited) = []  -- don't go back to the start
-      | isSecondVisit = [] -- second visit is not allowed or has already occurred
-      | otherwise = concatMap (dfs (next:visited) (map (next :) acc)) $ g M.! next
-      where
-        isSecondVisit = isSmall next && next `elem` visited
-
-
-type Seed = (Node, [Node])
-data TreeF a r = TNil | TNode a [r] deriving (Functor, Eq, Show)
+type Seed = (Node, [Node], Graph)
+type Seed' = (Node, [Node], Graph, Bool)
+data TreeF a r = TNode a [r] deriving (Functor, Eq, Show)
 type Tree a = Fix (TreeF a)
 
 
 mkTree :: Graph -> Tree Node
-mkTree g = ana coalg ("start", [])
-  where
-    coalg :: Seed -> TreeF Node Seed
-    coalg (next, visited)
-      | next == "end" = TNode next []
-      | next == "start" && not (null visited) = TNil
-      | isSecondVisit = TNil
-      | otherwise = TNode next ( (, next:visited) <$> g M.! next)
-      where
-        isSecondVisit = isSmall next && next `elem` visited
+mkTree g = ana makeCoalg ("start", [], g)
 
 
-printTree :: Tree Node  -> String
-printTree = cata alg
+-- I couldn't work out how to exclude dead end caves that aren't "end"
+makeCoalg :: Seed -> TreeF Node Seed
+makeCoalg (this, visited, g)
+  | this == "end" = TNode this []
+  | otherwise = TNode this $ (, this:visited, g) <$> kids
   where
-    alg :: TreeF Node String -> String
-    alg TNil = "\n"
-    alg (TNode n ss) = concat $ (\s -> n ++ ", " ++ s) <$> ss
+    visitAllowed x = not (isSmall x) || x `notElem` visited
+    kids = filter visitAllowed $ g M.! this
 
-paths :: Tree Node -> Int
-paths = cata alg
+
+-- This won't work because we can't let just one of the kids to make a second visit
+-- So, I guess we cant use ana we need fufu or something like that
+makeCoalg' :: Seed' -> TreeF Node Seed'
+makeCoalg' (this, visited, g, canMakeSecondVisit)
+  | this == "end" = TNode this []
+  | otherwise = TNode this $ (, this:visited, g, canMakeSecondVisit && not isSecondVisit) <$> kids
   where
-    alg :: TreeF Node Int -> Int
-    alg TNil = 1
-    alg (TNode n ss) = sum ss
+    visitAllowed x = not (isSmall x) || x `notElem` visited || canMakeSecondVisit
+    kids = filter (/= "start") $ filter visitAllowed $ g M.! this
+    isSecondVisit = isSmall this && this `elem` visited
+
+
+-- a -> f (Either (Fix f) a)
+makeCoalg'' :: Seed' -> TreeF (Either (Fix (TreeF Node)) Seed') Seed'
+makeCoalg'' (this, visited, g, canMakeSecondVisit)
+  | this == "end" = undefined --TNode this (Left [])
+  | otherwise = undefined --TNode this $ (, this:visited, g, canMakeSecondVisit && not isSecondVisit) <$> kids
+  where
+    visitAllowed x = not (isSmall x) || x `notElem` visited || canMakeSecondVisit
+    kids = filter (/= "start") $ filter visitAllowed $ g M.! this
+    isSecondVisit = isSmall this && this `elem` visited
+
+
+
+render :: Tree Node  -> [String]
+render = cata renderAlg
+
+renderAlg :: TreeF Node [String] -> [String]
+renderAlg (TNode n []) = [n]
+renderAlg (TNode n ss) = (\s -> n ++ ", " ++ s) <$> concat ss
+
+
+paths :: Tree Node -> [[Node]]
+paths = cata pathAlg
+
+
+pathAlg :: TreeF Node [[Node]] -> [[Node]]
+pathAlg (TNode n []) = [[n]]
+pathAlg (TNode n ss) = concat $ ((n:) <$>) <$> ss
+

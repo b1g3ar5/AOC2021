@@ -55,8 +55,8 @@ libMain = do
   --timeIt day10
   --timeIt day11
   --timeIt day12
-  timeIt day13
-  --timeIt day14
+  --timeIt day13
+  timeIt day14
   --timeIt day15
   --timeIt day16
   --timeIt day17

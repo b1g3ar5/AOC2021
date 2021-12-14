@@ -47,6 +47,7 @@ module Utils (
   , isAsciiUpper
   , intercalate 
   , nub
+  , group
 )
 where
 
