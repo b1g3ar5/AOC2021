@@ -51,6 +51,7 @@ library
       Day8
       Day9
       Lib
+      Paths
       Search
       Utils
   other-modules:
@@ -63,6 +64,7 @@ library
       Clever
     , Useful
     , adjunctions
+    , array
     , base
     , comonad
     , containers
@@ -97,6 +99,7 @@ executable AOC2021-exe
     , Clever
     , Useful
     , adjunctions
+    , array
     , base
     , comonad
     , containers
@@ -132,6 +135,7 @@ test-suite AOC2021-test
     , Clever
     , Useful
     , adjunctions
+    , array
     , base
     , comonad
     , containers

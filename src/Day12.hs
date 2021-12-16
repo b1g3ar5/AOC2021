@@ -42,11 +42,6 @@ isSmall = isAsciiLower . head
 generatePaths :: Bool -> Node -> Node -> Graph -> [[Node]]
 generatePaths isPart1 start end g = map reverse $ dfs isPart1 [] [[]] start
   where
-    -- Parameters: 
-    -- whether second visits are allowed
-    -- list of nodes visited
-    -- paths that we have accumulated
-    -- the next node
     dfs :: Bool -> [Node] -> [[Node]] -> Node -> [[Node]]
     dfs secondVisitNotAllowed visited acc next
       | next == end = map (next :) acc -- add end to all the paths
@@ -61,15 +56,18 @@ generatePaths isPart1 start end g = map reverse $ dfs isPart1 [] [[]] start
 day12 :: IO ()
 day12 = do
   ls <- getLines 12
-  let ls = test'
+  --let ls = test'
   let graph = mkGraph $ parseEdge <$> ls
   putStrLn $ "Day12: part1: " ++ show (length $ generatePaths True "start" "end" graph )
-  putStrLn $ "Day12: part2: " ++ unlines (sort $ show <$> generatePaths False "start" "end" graph)
+  putStrLn $ "Day12: part2: " ++ show (length $ generatePaths False "start" "end" graph)
+  --putStrLn $ "Day12: part2: " ++ unlines (sort $ show <$> generatePaths False "start" "end" graph)
 
-  -- Hylomorphism version
-  putStrLn $ "Tree: " ++ show (length $ filter (\p -> last p == "end") $ hylo pathAlg makeCoalg ("start", [], graph))
-  putStrLn $ "Tree: " ++ show (length $ filter (\p -> last p == "end") $ hylo pathAlg makeCoalg' ("start", [], graph, True))
-  --putStrLn $ "Tree:\n" ++ unlines (sort $ filter (\p -> last p == 'd') $ hylo renderAlg makeCoalg' ("start", [], graph, True))
+  -- Hylomorphism version 
+  putStrLn $ "Day12:Hylomorphism, part1: " ++ show (length $ hylo pathAlg makeCoalg ("start", [], graph))
+  putStrLn $ "Day12:Hylomorphism, part2: " ++ show (length $ hylo pathAlg makeCoalg' ("start", [], graph, True))
+  --putStrLn $ "Day12:Hylomorphism, part2: " ++ unlines (hylo renderAlg makeCoalg' ("start", [], graph, True))
+  
+  
 
   return ()
 
@@ -111,10 +109,6 @@ apo :: Functor f => CVCoalgebra f a -> a -> Fix f
 apo f = Fix . fmap (either id (apo f)) . f
 
 
---fix :: (a -> a) -> a
---fix f = let {x = f x} in x
-
-
 type Seed = (Node, [Node], Graph)
 type Seed' = (Node, [Node], Graph, Bool)
 data TreeF a r = TNode a [r] deriving (Functor, Eq, Show)
@@ -135,33 +129,20 @@ makeCoalg (this, visited, g)
     kids = filter visitAllowed $ g M.! this
 
 
--- This won't work because we can't let just one of the kids to make a second visit
--- So, I guess we cant use ana we need fufu or something like that
 makeCoalg' :: Seed' -> TreeF Node Seed'
 makeCoalg' (this, visited, g, canMakeSecondVisit)
   | this == "end" = TNode this []
   | otherwise = TNode this $ (, this:visited, g, canMakeSecondVisit && not isSecondVisit) <$> kids
   where
-    visitAllowed x = not (isSmall x) || x `notElem` visited || canMakeSecondVisit
-    kids = filter (/= "start") $ filter visitAllowed $ g M.! this
+    -- visit allowed if cave is big or x is not in visited or second visits are allowed
+    visitAllowed x = not (isSmall x) || x `notElem` visited || (canMakeSecondVisit && not isSecondVisit)
+    kids = filter visitAllowed $ filter (/= "start") $ g M.! this
+    -- it's a second visit if it's small and it's already in visited
     isSecondVisit = isSmall this && this `elem` visited
-
-
--- a -> f (Either (Fix f) a)
-makeCoalg'' :: Seed' -> TreeF (Either (Fix (TreeF Node)) Seed') Seed'
-makeCoalg'' (this, visited, g, canMakeSecondVisit)
-  | this == "end" = undefined --TNode this (Left [])
-  | otherwise = undefined --TNode this $ (, this:visited, g, canMakeSecondVisit && not isSecondVisit) <$> kids
-  where
-    visitAllowed x = not (isSmall x) || x `notElem` visited || canMakeSecondVisit
-    kids = filter (/= "start") $ filter visitAllowed $ g M.! this
-    isSecondVisit = isSmall this && this `elem` visited
-
 
 
 render :: Tree Node  -> [String]
 render = cata renderAlg
-
 renderAlg :: TreeF Node [String] -> [String]
 renderAlg (TNode n []) = [n]
 renderAlg (TNode n ss) = (\s -> n ++ ", " ++ s) <$> concat ss
@@ -169,9 +150,9 @@ renderAlg (TNode n ss) = (\s -> n ++ ", " ++ s) <$> concat ss
 
 paths :: Tree Node -> [[Node]]
 paths = cata pathAlg
-
-
 pathAlg :: TreeF Node [[Node]] -> [[Node]]
-pathAlg (TNode n []) = [[n]]
+-- Paths must end at "end"
+pathAlg (TNode n []) = [[n] | n == "end"]
+-- Otherwise just append to the paths from the kids
 pathAlg (TNode n ss) = concat $ ((n:) <$>) <$> ss
 

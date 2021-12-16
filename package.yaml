@@ -36,6 +36,7 @@ dependencies:
 - vector-space
 - Useful
 - multiset
+- array
 
 library:
   source-dirs: src

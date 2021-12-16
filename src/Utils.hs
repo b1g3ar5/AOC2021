@@ -48,6 +48,11 @@ module Utils (
   , intercalate 
   , nub
   , group
+  , M.Map(..)
+  , S.Set(..)
+  , Seq(..)
+  , IM.IntMap(..)
+  , V.Vector(..)
 )
 where
 

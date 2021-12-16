@@ -1,7 +1,6 @@
 module Day14 where
 
-import Utils
-import Data.Map.Strict (Map)
+import Utils (getLines, fromMaybe, sort, Map(..))
 import qualified Data.Map.Strict as M 
 
 
@@ -40,6 +39,7 @@ score p = last s - head s + 1
   where
   s = sort $ M.elems $ M.map (\n -> (n `div` 2) + 1) $ M.foldlWithKey insertPair M.empty p
   insertPair mp (x1,x2) n = M.insertWith (+) x1 n $ M.insertWith (+) x2 n mp
+
 
 day14 :: IO ()
 day14 = do
