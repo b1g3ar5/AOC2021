@@ -71,8 +71,10 @@ library
     , data-fix
     , distributive
     , hashable
+    , megaparsec
     , mtl
     , multiset
+    , parser-combinators
     , semirings
     , sort
     , split
@@ -106,8 +108,10 @@ executable AOC2021-exe
     , data-fix
     , distributive
     , hashable
+    , megaparsec
     , mtl
     , multiset
+    , parser-combinators
     , semirings
     , sort
     , split
@@ -142,8 +146,10 @@ test-suite AOC2021-test
     , data-fix
     , distributive
     , hashable
+    , megaparsec
     , mtl
     , multiset
+    , parser-combinators
     , semirings
     , sort
     , split

@@ -1,7 +1,7 @@
 module Day16 where
 
 
-import Utils ( getLines )
+import Utils hiding (toInt)
 import Day5 (parseLine)
 
 
@@ -34,10 +34,13 @@ toInt [c] = if c=='1' then 1 else 0
 toInt s = 2 * toInt (init s) + if last s =='1' then 1 else 0
 
 
-parsePacket :: String -> (Packet, String)
+type Parser a = String -> (a,String)
+
+
+parsePacket :: Parser Packet
 parsePacket s
   | t==4 = (Packet v t (Left lit), rem1)
-  | otherwise = (Packet v t (Right op), rem2)
+  | otherwise = (Packet v t (Right op), rem1)
   where
     v = toInt $ take 3 s
     t = toInt $ take 3 $ drop 3 s
@@ -45,7 +48,7 @@ parsePacket s
     (op, rem2) = parseOperator $ drop 6 s
 
 
-parseLiteral :: String -> (Int, String)
+parseLiteral :: Parser Int
 parseLiteral = go []
   where
     go _ [] = error "Ran out of data in parse"
@@ -55,7 +58,7 @@ parseLiteral = go []
       | otherwise = error "Got a character other than a [0|1]"
 
 
-parseOperator :: String -> ([Packet], String)
+parseOperator :: Parser [Packet]
 parseOperator s
   | lenId == '0' = (subPackets2, rem2 ++ drop (lengthOfsubpackets + 16) s)
   | lenId == '1' = (subPackets1, rem1)
@@ -68,7 +71,8 @@ parseOperator s
     (subPackets1, rem1) = parseByNumber numberOfSubpackets [] $ drop 12 s
     (subPackets2, rem2) = parseByLength [] $ take lengthOfsubpackets $  drop 16 s
 
-    parseByNumber :: Int -> [Packet] -> String -> ([Packet], String)
+
+    parseByNumber :: Int -> [Packet] -> Parser [Packet]
     parseByNumber n acc s
       | n==0 = (acc, s)
       | null s = (acc, s)
@@ -76,7 +80,7 @@ parseOperator s
       where
         (w,t) = parsePacket s
 
-    parseByLength :: [Packet] -> String -> ([Packet], String)
+    parseByLength :: [Packet] -> Parser [Packet]
     parseByLength ps s
       | null s = (ps, [])
       | otherwise = parseByLength (ps ++ [w]) t

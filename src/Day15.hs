@@ -8,9 +8,12 @@ import qualified Paths as P
 import Memo hiding (Tree)
 
 import Debug.Trace
+import Search --hiding (State(..), Move(..))
 
 
 type Grid = Map Coord Int
+
+
 
 
 parseGrid :: [String] -> Grid
@@ -40,6 +43,7 @@ lookup g (x, y) = 1 + mod (base + qx + qy -1) 9
     base = fromMaybe (error $ "error in lookup at (x,y): (" ++ show x ++ ", " ++ show y ++ ")") $ g M.!? (rx, ry)
 
 
+-- This gives the wrong answer - so there must be some left or up turns...
 floodFill2 :: Grid -> Grid
 floodFill2 g = foldl go (M.singleton (0,0) 1) [1..((5*gridSize) - 1)]
   where
@@ -55,8 +59,6 @@ floodFill2 g = foldl go (M.singleton (0,0) 1) [1..((5*gridSize) - 1)]
                     ) mg2 $ (,level) <$> [1..level]
 
 
-
---memoise' funcToMemoise fromA toA fromB toB = fastestFunc
 
 coord2int :: Coord -> Int
 coord2int (x,y) = y*gridSize+x
@@ -78,33 +80,31 @@ solve g start = go M.empty [(0, start)]
       | pos == target1 = dist + val
       | dist+val>= savedDist = go minSoFar outHeap
       | otherwise = go (M.insert pos (dist+val) minSoFar) (nub $ sort $ outHeap ++ ((dist+val,) <$> ns))
-      -- | otherwise = trace (show pos ++ "," ++ show (dist+val)) $ go (M.insert pos (dist+val) minSoFar) (nub $ sort $ outHeap ++ ((dist+val,) <$> ns))
       where
-        --((dist, pos), outHeap) = fromMaybe (error "Heap should not be empty here") $ extractMin inHeap
         val = g `lookup` pos
         ns = filter inBounds $ neighbours4 pos
         savedDist = minSoFar `lu` pos
 
 
-data SkewHeap a = Empty | SkewNode a (SkewHeap a) (SkewHeap a) deriving (Show)
+data SkewHeap a = EmptyHeap | SkewNode a (SkewHeap a) (SkewHeap a) deriving (Show)
 
 
 (+++) :: Ord a => SkewHeap a -> SkewHeap a -> SkewHeap a
 heap1@(SkewNode x1 l1 r1) +++ heap2@(SkewNode x2 l2 r2) 
   | x1 <= x2    = SkewNode x1 (heap2 +++ r1) l1 
   | otherwise = SkewNode x2 (heap1 +++ r2) l2
-Empty +++ heap = heap
-heap +++ Empty = heap
+EmptyHeap +++ heap = heap
+heap +++ EmptyHeap = heap
 
 
 extractMin :: Ord a => SkewHeap a -> Maybe (a, SkewHeap a)
-extractMin Empty = Nothing
+extractMin EmptyHeap = Nothing
 extractMin (SkewNode x l r ) = Just (x , l +++ r )
 
 
 fromList :: Ord a => [a] -> SkewHeap a
-fromList xs = foldl (+++) Empty nodes
-  where nodes = map (\x-> SkewNode x Empty Empty) xs
+fromList xs = foldl (+++) EmptyHeap nodes
+  where nodes = map (\x-> SkewNode x EmptyHeap EmptyHeap) xs
 
 
 -- Lookup with big default
@@ -112,31 +112,44 @@ lu :: Map Coord Int -> Coord -> Int
 lu mp x = fromMaybe 1000000 $ mp M.!? x
 
 
+data Tree a = Empty | Node a (Tree a) (Tree a) deriving Show
 
+
+bftree :: [a] -> Tree a
+bftree xs = t
+    where
+    t : q  =  go xs q
+    go []       _              =  repeat Empty
+    go (x:ys) ~(l : ~(r : q))  =  Node x l r : go ys q
 
 day15 :: IO ()
 day15 = do
   ls <- getLines 15
-  --let ls = test
+  let ls = test
   let grid = parseGrid ls
       mg1 = floodFill grid
       mg2 = floodFill2 grid
 
-  --putStrLn $ "Day12:part1: " ++ show grid
-  putStrLn $ "Day12:part1: " ++ show (solve grid (0,0) - grid M.! (0,0))
+  --putStrLn $ "Day12:part1: " ++ show (solve grid (0,0) - grid M.! (0,0))
   --putStrLn $ "Day12:part1: " ++ show (mg1 M.! target1 - 1)
   --putStrLn $ "Day12:part1: " ++ show (mg2 M.! target2 - 1) -- 2186 too low, 2882 too high
+  putStrLn $ "bft: " ++ show (bftree [67,4,2,6,1,8,7])
 
---1163751742 2274862853 3385973964 4496184175 5517295286
+  let startPath :: Path
+      startPath = ([], ((0,0), 0, grid))
+  putStrLn $ "bfsearch: " ++ show (bfSearch [] [startPath])
+
   return ()
 
 
-target1 = (gridSize-1, gridSize-1)
-target2 = (5*gridSize - 1, 5*gridSize - 1)
+start :: (Int, Int)
+start = (0,0)
+--target1 = (gridSize-1, gridSize-1)
+--target2 = (5*gridSize - 1, 5*gridSize - 1)
+--gridSize = 100
 
 
-gridSize :: Int
-gridSize = 200
+
 test :: [String]
 test = [
     "1163751742"
@@ -151,7 +164,22 @@ test = [
   , "2311944581"
   ]
 
+{-
+gridSize :: Int
+test :: [String]
+test = [
+    "1999999"
+  , "1911199"
+  , "1119199"
+  , "9999199"
+  , "9991199"
+  , "9991999"
+  , "9991111"
+  ]
 
+-}
+
+{-
 
 newtype Fix f = Fix { unFix :: f (Fix f) } 
 type Algebra f a = f a -> a
@@ -181,10 +209,6 @@ mkTree :: Grid -> Tree Coord
 mkTree g = ana makeCoalg (20, (0, 0), [])
 
 
-inBounds :: Coord -> Bool
-inBounds (x,y) = x>=0 && y>=0 && x<=gridSize-1 && y<=gridSize-1
-
-
 makeCoalg :: Seed -> TreeF Coord Seed
 makeCoalg (n, this, visited)
   | n == 0 = TNode this [] -- Terminate early
@@ -210,3 +234,7 @@ pathAlg g (TNode n ss)
   | n == target1 = g M.! n -- If we're at the target just return the cost
   | null ss = 1000000 -- If not at the target and nowhere to go PENALTY
   | otherwise = g M.! n + minimum ss
+
+-}
+
+

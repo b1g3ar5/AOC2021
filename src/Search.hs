@@ -1,41 +1,56 @@
 module Search where
 
-import Data.Map.Strict (Map)
+import Utils
 import qualified Data.Map.Strict as M
-import Data.List ((\\))
-import Utils (Coord)
+import Debug.Trace
+
+gridSize :: Int
+gridSize = 10
+target1, target2 :: (Int, Int)
+target1 = (gridSize-1, gridSize-1)
+target2 = (5*gridSize - 1, 5*gridSize - 1)
+inBounds :: Coord -> Bool
+inBounds (x,y) = x>=0 && y>=0 && x<=gridSize-1 && y<=gridSize-1
+
+type Path = ([Move], State)
+type Frontier = [Path]
+type Stat = Int -- for example the length of the path
+type State = (Coord, Stat, Map Coord Stat)
+type Move = Coord
+
+moves :: State -> [Coord]
+moves (c, dist, mp) = filter inBounds $ neighbours4 c
+move :: State -> Coord -> State
+move (p, dist, mp) mv = (mv, dist + mp M.! mv, mp)
+solved :: State -> Bool
+solved (c, _, _) = c==target1
 
 
--- elements that we want to label
-isPossible :: k -> a -> Bool
-isPossible = undefined
-
--- How to work out the label given a point
--- Could be just the b given...
-getLabel :: Coord -> a -> b -> b
-getLabel = undefined
+succs :: Path -> [Path]
+succs (ms, q) = [(ms ++ [m], move q m) | m <- moves q]
 
 
--- How to work out the neighbours of a point
-neighbours :: Coord -> [Coord]
-neighbours = undefined
+bfSearch :: [State] -> Frontier -> Maybe [Move]
+bfSearch qs [] = Nothing
+bfSearch qs (p@(ms,q):ps)
+  | solved q = Just ms
+  | q `elem` qs = bfSearch qs ps
+  | otherwise = trace (show p) $ bfSearch (q:qs) (ps ++ succs p)
 
 
-label :: Monoid b => Map Coord a -> Map Coord b
-label heightMap = go pool M.empty
-  where
-    pool = M.keys $ M.filterWithKey isPossible heightMap
-    go :: Monoid b => [Coord] -> Map Coord b -> Map Coord b
-    go [] inMap = inMap
-    go (k:ks) inMap = go rem outMap
-      where
-        (rem, outMap) = region [k] ks inMap
+bfSearch' :: [State] -> Frontier -> Frontier -> Maybe [Move]
+bfSearch' qs [] [] = Nothing
+bfSearch' qs rs [] = bfSearch' qs [] rs
+bfSearch' qs rs (p@(ms,q):ps)
+  | solved q = Just ms
+  | q `elem` qs = bfSearch' qs rs ps
+  | otherwise = bfSearch' (q:qs) (succs p ++ rs) ps
 
-    -- params are: the pipeline, pool of possibles, current map of regions
-    region :: Monoid b => [Coord] -> [Coord] -> Map Coord b -> ([Coord], Map Coord b)
-    region [] possibles mp = (possibles, mp)
-    region (c:cs) possibles mp = region (cs++ns) (possibles \\ ns) mpp
-      where
-        mpp = M.insert c (getLabel c (heightMap M.! c) mempty) mp
-        ns = filter (`elem` possibles) $ neighbours c
+bfSearch'' :: [State] -> [Frontier] -> Frontier -> Maybe [Move]
+bfSearch'' qs [] [] = Nothing
+bfSearch'' qs pss [] = bfSearch'' qs [] $ concat $ reverse pss
+bfSearch'' qs pss (p@(ms,q):ps)
+  | solved q = Just ms
+  | q `elem` qs = bfSearch'' qs pss ps
+  | otherwise = bfSearch'' (q:qs) (succs p : pss) ps  
 

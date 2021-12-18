@@ -37,6 +37,8 @@ dependencies:
 - Useful
 - multiset
 - array
+- megaparsec
+- parser-combinators
 
 library:
   source-dirs: src

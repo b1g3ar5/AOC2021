@@ -53,6 +53,8 @@ module Utils (
   , Seq(..)
   , IM.IntMap(..)
   , V.Vector(..)
+  , guard
+  , fromJust
 )
 where
 
