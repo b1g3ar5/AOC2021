@@ -60,9 +60,9 @@ libMain = do
   --timeIt day15
   --timeIt day16
   --timeIt day17
-  timeIt day18
+  --timeIt day18
   --timeIt day19
-  --timeIt day20
+  timeIt day20
   --timeIt day21
   --timeIt day22
   --timeIt day23

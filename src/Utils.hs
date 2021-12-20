@@ -4,6 +4,7 @@
 
 module Utils (
   getLines
+  , getTest
   , getRaw
   , getWords
   , splitOn
@@ -55,6 +56,7 @@ module Utils (
   , V.Vector(..)
   , guard
   , fromJust
+  , intersect
 )
 where
 
@@ -89,6 +91,11 @@ getF f n = do
   s <- readFile $ "./Data/Day" ++ show n ++ ".in"
   return $ f s
 
+getT :: (String -> a) -> Int -> IO a
+getT f n = do
+  s <- readFile $ "./Data/Day" ++ show n ++ ".ex"
+  return $ f s
+
 
 getRaw :: Int -> IO String
 getRaw = getF id
@@ -101,6 +108,9 @@ getWords = getF words
 getLines :: Int -> IO [String]
 getLines = getF lines
 
+
+getTest :: Int -> IO [String]
+getTest = getT lines
 
 ------------------ VARIOUS UTILITY FUNCTIONS --------------------
 
@@ -186,6 +196,9 @@ instance Num Coord where
   abs (x, y) = (abs x, abs y)
   signum (x, y) = (signum x, signum y)
   fromInteger i = (fromInteger i, 0)
+
+
+largePrime = 11939
 
 
 manhattan :: Coord -> Coord -> Int
