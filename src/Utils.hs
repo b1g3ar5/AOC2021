@@ -40,6 +40,7 @@ module Utils (
   , sortOn
   , transpose
   , steadyState
+  , steadyState'
   , swap
   , (\\)
   , toLower
@@ -56,7 +57,12 @@ module Utils (
   , V.Vector(..)
   , guard
   , fromJust
+  , isJust
   , intersect
+  , isNothing
+  , safeHead
+  , delete
+  , replace
 )
 where
 
@@ -70,6 +76,7 @@ import qualified Data.IntMap.Strict as IM
 import Data.Sequence (Seq(..), (><), (|>), (<|))
 import Data.List
 import Data.List.Split
+import Data.List.Utils
 import Data.Bifunctor
 import Data.Tuple
 import Data.Maybe
@@ -262,3 +269,14 @@ below x = x + (0,1)
 
 steadyState :: Eq a => (a -> a) -> a -> a
 steadyState f x = if f x == x then x else steadyState f (f x)
+
+steadyState' :: Eq a => (a -> Maybe a) -> a -> Maybe a
+steadyState' f x = case f x of
+                     Nothing -> Just x
+                     Just y -> steadyState' f y
+
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing 
+safeHead (x:_) = Just x
+

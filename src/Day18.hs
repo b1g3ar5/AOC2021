@@ -14,9 +14,12 @@ type Level = Int
 
 -- A tree, nodes labelled with the depth
 data Tree = Leaf (Level, Int) | Node Level Tree Tree deriving (Show, Eq)
+
+
 isLeaf :: Tree -> Bool 
 isLeaf (Leaf _) = True
 isLeaf _ = False
+
 
 getInt :: Tree -> Int
 getInt (Leaf (l,x)) = x
@@ -58,23 +61,24 @@ parseElement :: Level -> Parser Tree
 parseElement n = ((\i -> Leaf (n, i)) <$> parseInt) <|> parsePair n
 
 
+-- Returns: hasExploded, carryLeft, carryRight, Tree
 explode :: Tree -> (Bool, Int, Int, Tree)
 explode (Leaf x) = (False, 0, 0, Leaf x)
 explode node@(Node lvl l r)
   | lvl>3 && isLeaf l && isLeaf r = (True, getInt l, getInt r, Leaf (lvl,0)) 
-  | lvl>3 && isLeaf l = (True, 0, ry, Node lvl (addR rx l) rt) -- explode the right
-  | lvl>3 = (True, lx, 0, Node lvl lt (addL ly rt)) -- explode the left
+  | lvl>3 && isLeaf l = (True, 0, rr, Node lvl (addR rl l) rt) -- explode the right
+  | lvl>3 = (True, ll, 0, Node lvl lt (addL lr rt)) -- explode the left
   | otherwise = 
       if el then
-        (True, lx, 0, Node lvl lt (addL ly r))
+        (True, ll, 0, Node lvl lt (addL lr r))
       else        
         if er then
-          (True, 0, ry, Node lvl (addR rx l) rt)
+          (True, 0, rr, Node lvl (addR rl l) rt)
         else
           (False, 0, 0, Node lvl l r)
   where
-    (el, lx, ly, lt) = explode l        
-    (er, rx, ry, rt) = explode r
+    (el, ll, lr, lt) = explode l        
+    (er, rl, rr, rt) = explode r
 
 
 split :: Tree -> Tree
@@ -87,9 +91,7 @@ split (Leaf (n, x)) = if x > 9 then Node n (Leaf (n+1, d2)) (Leaf (n+1, d2 + if 
 
 
 addTree :: Tree -> Tree -> Tree
-addTree l r = reduce s
-  where
-    s = Node 0 (increment 1 l) (increment 1 r)
+addTree l r = reduce $ Node 0 (increment 1 l) (increment 1 r)
     
 
 reduce :: Tree -> Tree
@@ -104,14 +106,7 @@ magnitude (Node _ l r) = 3 * magnitude l + 2 * magnitude r
 
 
 maxMagnitude :: [Tree] -> Int
-maxMagnitude = maximum . go 
-  where
-    go :: [Tree] -> [Int]
-    go ts = do
-      t1 <- ts
-      t2 <- ts
-      guard (t1 /= t2)
-      return $ max (magnitude $ addTree t1 t2) (magnitude $ addTree t2 t1)
+maxMagnitude ts = maximum $ [max (magnitude $ addTree t1 t2) (magnitude $ addTree t2 t1) | t1 <- ts, t2 <- ts, t1 /= t2]
     
 
 day18 :: IO ()
@@ -121,7 +116,5 @@ day18 = do
 
   putStrLn $ "Day18: part2: " ++ show (magnitude $ foldl1 addTree ns) 
   putStrLn $ "Day18: part2: " ++ show (maxMagnitude ns)
-
-
   return ()
 

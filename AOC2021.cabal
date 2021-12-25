@@ -41,7 +41,9 @@ library
       Day21
       Day22
       Day23
+      Day23Old
       Day24
+      Day24b
       Day25
       Day3
       Day4
@@ -62,19 +64,23 @@ library
       ViewPatterns, TupleSections, GADTs, BangPatterns, RankNTypes, TypeApplications, PolyKinds, StandaloneKindSignatures, ExistentialQuantification, TypeOperators, ConstraintKinds, DeriveFoldable, DeriveFunctor, DeriveTraversable, StandaloneDeriving, GeneralisedNewtypeDeriving, DeriveGeneric
   build-depends:
       Clever
+    , MissingH
     , Useful
     , adjunctions
     , array
     , base
+    , bimap
     , comonad
     , containers
     , data-fix
     , distributive
     , hashable
     , megaparsec
+    , memoize
     , mtl
     , multiset
     , parser-combinators
+    , search-algorithms
     , semirings
     , sort
     , split
@@ -99,19 +105,23 @@ executable AOC2021-exe
   build-depends:
       AOC2021
     , Clever
+    , MissingH
     , Useful
     , adjunctions
     , array
     , base
+    , bimap
     , comonad
     , containers
     , data-fix
     , distributive
     , hashable
     , megaparsec
+    , memoize
     , mtl
     , multiset
     , parser-combinators
+    , search-algorithms
     , semirings
     , sort
     , split
@@ -137,19 +147,23 @@ test-suite AOC2021-test
   build-depends:
       AOC2021
     , Clever
+    , MissingH
     , Useful
     , adjunctions
     , array
     , base
+    , bimap
     , comonad
     , containers
     , data-fix
     , distributive
     , hashable
     , megaparsec
+    , memoize
     , mtl
     , multiset
     , parser-combinators
+    , search-algorithms
     , semirings
     , sort
     , split

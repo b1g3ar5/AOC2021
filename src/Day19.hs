@@ -5,8 +5,10 @@ module Day19 where
 
 import Utils hiding (allCoords, Coord)
 import qualified Data.Map.Strict as M
+import qualified Data.Bimap as B
 import qualified Data.Set as S
 
+import Debug.Trace
 
 paragraphs :: [String] -> [[String]]
 paragraphs = splitOn [""]
@@ -19,10 +21,6 @@ type Index = Int
 
 magnitude :: Coord -> Dist
 magnitude (x,y,z) = (x*x)+(y*y)+(z*z)
---magnitude (x,y,z) = abs x + abs y + abs z
-
---instance {-# OVERLAPS #-} Eq Coord where
---  v == w = magnitude v == magnitude w
 
 
 instance Num Coord where
@@ -37,11 +35,22 @@ instance Num Coord where
 type Scanner = [Coord]
 
 
+data Transformation = Transformation {
+    s1 :: Int
+  , s2 :: Int
+  , beacons :: B.Bimap Int Int
+  , transformation :: Maybe (Coord -> Coord)
+  , position :: Maybe Coord
+} 
+
+instance Show Transformation where
+  show (Transformation s1 s2 bs t p) = "s1: " ++ show s1 ++ ", s2: " ++ show s2 ++ ", beacons: " ++ show bs ++ ", position: " ++ show p
+
 parseScanner :: [String]  -> [Coord]
 parseScanner s = go [] $ tail s
   where
     go acc [] = acc
-    go acc (l:ls) = if l=="" then acc else go (v:acc) ls
+    go acc (l:ls) = if l=="" then acc else go (acc ++ [v]) ls
       where
         cs = splitOn "," l
         v = (read $ head cs, read $ cs!!1, read $ cs!!2)
@@ -67,8 +76,8 @@ beaconDists s = go M.empty $ zip  [0..] s
 getSimilar :: BeaconMap -> BeaconMap -> Map Dist ((Index, Index),(Index, Index))
 getSimilar = M.intersectionWithKey (\k v w -> (v,w))
         
-t2l :: (a, a) -> [a]
-t2l (x,y) = [x,y]
+toList :: (a, a) -> [a]
+toList (x,y) = [x,y]
 
 
 transformations :: Num a => [(a, a, a) -> (a, a, a)]
@@ -90,101 +99,133 @@ transformations = do
              ,\(x,y,z)->(x,z,y), \(x,y,z)->(y,x,z), \(x,y,z)->(z,y,x)]
 
 
-findMapping :: Scanner -> Scanner -> (Map Int Int, Coord->Coord)
---findMapping :: Scanner -> Scanner -> Map Index Index
+findMapping :: Scanner -> Scanner -> (B.Bimap Int Int, Maybe (Coord->Coord))
 findMapping s1 s2 = (mp, findTransformation)
   where
     b1 = beaconDists s1
     b2 = beaconDists s2
-    mp = M.fromList $ (\ix1 -> (ix1, findIndex ix1)) <$> ixs1
+    mp = B.fromList $ second fromJust <$> filter (\(_, mi) -> isJust mi) ((\ix1 -> (ix1, findIndex ix1)) <$> ixs1)
     similar = M.elems $ getSimilar b1 b2
-    ixs1 = nub $ concat $ t2l . fst <$> similar
-    ixs2 = nub $ concat $ t2l . snd <$> similar
+    ixs1 = nub $ concat $ toList . fst <$> similar
+    ixs2 = nub $ concat $ toList . snd <$> similar
     
-    allPossibles = t2l . snd <$> concat ((\ix1 -> filter (\((x,y),_) -> x==ix1 || y == ix1) similar) <$> ixs1)
-    findIndex :: Index -> Index
-    findIndex ix = head $ foldl1 intersect $ t2l . snd <$> filter (\((x,y),_) -> x==ix || y==ix) similar
+    allPossibles = toList . snd <$> concat ((\ix1 -> filter (\((x,y),_) -> x==ix1 || y == ix1) similar) <$> ixs1)
+    findIndex :: Index -> Maybe Index
+    findIndex ix = safeHead $ foldl1 intersect $ toList . snd <$> filter (\((x,y),_) -> x==ix || y==ix) similar
 
-    findTransformation :: Coord -> Coord
-    findTransformation = head ts
+    findTransformation :: Maybe (Coord -> Coord)
+    findTransformation = safeHead ts
       where
         ts :: [Coord -> Coord]
         ts = do
           t <- transformations
-          guard (allTheSame $ (\(ix, iy) -> s1 !! ix - t (s2 !! iy) ) <$> M.toList mp)
+          guard (allTheSame $ (\(ix, iy) -> s1 !! ix - t (s2 !! iy) ) <$> B.toList mp)
           return t
 
 
 allTheSame :: (Eq a) => [a] -> Bool
 allTheSame xs = all (== head xs) (tail xs)
 
-findPos :: [Coord] -> [Coord] ->  Coord
-findPos beacons1 beacons2 = undefined
-  where
-    trans = go Nothing transformations
-    go acc [] = acc
-    go acc (t:ts) = undefined
-      where
-        s12 = zipWith (\b1 b2 -> b1 - t b2) beacons1 beacons2
 
 
---findAllMappings :: [Scanner] -> [((Index, Index), (Map Index Index, Coord -> Coord))]
+findAllMappings :: [Scanner] -> [Transformation]
 findAllMappings scanners = go [] $ zip [0..] scanners
---findAllMappings scanners = [(n1, p1), (n2, p2)]
   where
+    go :: [Transformation] -> [(Int, Scanner)] -> [Transformation]
     go acc [] = acc
-    go acc ((ix,x):ys) = go (acc ++ ((\(iy,y) -> ((ix, iy), findMapping x y)) <$> ys)) ys
+    go acc ((ix,x):ys) = go (acc ++ ((\(iy,y) -> 
+      let (mp, tr) = findMapping x y in relPos x y (Transformation ix iy mp tr Nothing)
+      ) <$> ys)) ys
 
-    allMappings = go [] $ zip [0..] scanners
 
-    beaconMaps :: [((Index, Index), Map Index Index)] 
-    beaconMaps = (\(x,(y,z)) -> (x,y)) <$> filter (\(_, (mp,_)) -> M.size mp >=12) allMappings
-    transforms :: [Coord -> Coord] 
-    transforms = (\(x,(y,z)) -> z) <$> filter (\(_, (mp,_)) -> M.size mp >=12) allMappings
+relPos :: Scanner -> Scanner -> Transformation -> Transformation
+relPos s1 s2 t@(Transformation ix1 ix2 mp transform _)
+  | B.null mp = t
+  | isNothing transform = t
+  | otherwise = Transformation ix1 ix2 mp transform (Just $ s1!!i1 - fromJust transform (s2!!i2))
+  where
+    i1 = head $ fst <$> B.toList mp
+    i2 = head $ snd <$> B.toList mp
 
-    ((i,j), mp) = head beaconMaps
 
-    (n1, t1, p1) = go' (0, id)
-    (n2, t2, p2) = go' (n1, t1)
+blookup :: (Ord a, Ord b) => B.Bimap a b -> a -> Maybe b
+blookup mp x = if x `B.member` mp then Just (mp B.! x) else Nothing
 
-    go' (currentScanner, currentTransform ) = (nextScanner, currentTransform . nextTransform, pos)
+blookupR :: (Ord a, Ord b) => B.Bimap a b -> b -> Maybe a
+blookupR mp x = if x `B.memberR` mp then Just (mp B.!> x) else Nothing
+
+
+convertBack :: Transformation -> Maybe (Coord -> Coord)
+convertBack t 
+  | isJust (position t) = Just $ \c -> fromJust (position t) + fromJust (transformation t) c
+  | otherwise = Nothing
+
+-- All t^6 == id for all tranformations, so inverse t = t^5
+convertForward :: Transformation -> Maybe (Coord -> Coord)
+convertForward t
+  | isJust (position t) = Just $ \c -> iterate (fromJust (transformation t)) (c - fromJust (position t)) !! 5
+  | otherwise = Nothing
+
+
+convertBeacons :: [[Coord]] -> [Transformation] -> [Coord]
+convertBeacons scanners transformations = concat $ (\(ix, f) -> f <$> scanners !! ix) <$> M.toList conversionFunctions
+  where
+    conversionFunctions = go (M.fromList [(0, id)]) [1..33] 
+    go :: Map Int (Coord -> Coord) -> [Int] -> Map Int (Coord -> Coord)
+    go acc [] = acc
+    go acc (x:todo)
+      | not (null t2) = go (M.insert x ((acc M.! s1 (head t2)) . fromJust (convertBack $ head t2)) acc) todo
+      | not (null t1) = go (M.insert x ((acc M.! s2 (head t1)) . fromJust (convertForward $ head t1)) acc) todo
+      | otherwise = trace (show $ todo ++ [x]) 
+                  go acc (todo ++ [x])
+
       where
-        ((_, nextScanner), lmp) = head $ filter (\((x,_),_)-> x==currentScanner) beaconMaps
-        currentIx = head $ fst <$> M.toList lmp
-        nextIx = head $ snd <$> M.toList lmp
-        nextTransform = transforms!!currentIx
-        pos = scanners!!currentScanner!!currentIx - currentTransform (nextTransform (scanners!!nextScanner!!nextIx))
+        t1, t2 :: [Transformation]
+        t1 = filter (\t -> s2 t `M.member` acc) $ filter (\t -> s1 t == x) transformations
+        t2 = filter (\t -> s1 t `M.member` acc) $ filter (\t -> s2 t == x) transformations
 
 
+hhead :: [a] -> a
+hhead [] = error "Head of null list"
+hhead (x:_) = x
 
 
 day19 :: IO ()
 day19 = do
-  --ls <- getLines 19
-  ls <- getTest 19
+  ls <- getLines 19
+  --ls <- getTest 19
   let ps = paragraphs ls
       scanners = parseScanner <$> ps
       num = sum $ length <$> scanners
-      beaconMaps = (\(x,(y,z)) -> (x,y)) <$> filter (\(_, (mp,_)) -> M.size mp >=12) (findAllMappings scanners)
-      transforms = (\(x,(y,z)) -> z) <$> filter (\(_, (mp,_)) -> M.size mp >=12) (findAllMappings scanners)
 
-      ((i,j), mp) = head beaconMaps
-      ixs, jxs :: [Index]
-      ixs = fst <$> M.toList mp
-      jxs = snd <$> M.toList mp
-      --x :: Index
-      --x = 1
-      ppp = scanners!!i!!(ixs!!0) - (transforms!!i) (scanners!!j!!(jxs!!0))
-      pos = zipWith (\ix jx -> scanners!!i!!ix - (transforms!!i) (scanners!!j!!jx)) ixs jxs
+      transformations = findAllMappings scanners
+      filteredTransformations = filter (\t -> B.size (beacons t) >= 12) transformations
+      firstMapKeys = B.keys $ beacons $ head filteredTransformations
+      secondMapKeys = B.keysR $ beacons $ head filteredTransformations
+
+      ts = catMaybes $ transformation <$> filteredTransformations
+      scannerPositions = catMaybes $ position <$> filteredTransformations
+      
+
+  --putStrLn $ "Day19: part1:mp " ++ show ((\t -> ((s1 t, s2 t), B.size $ beacons t)) <$> filteredTransformations)
+  --putStrLn $ "Day19: part1:beacons0 " ++ show (sort $ (\k -> head scanners !! k) <$> firstMapKeys)
+  --putStrLn $ "Day19: part1:beacons0 " ++ show (sort $ (\k -> head scannerPositions + head ts (scanners!!1 !! k)) <$> secondMapKeys)
+
+  --putStrLn $ "\nDay19: part1:beacons0 " ++ show (sort $ (\k -> scanners !! 1 !! k) <$> secondMapKeys)
+  --putStrLn $ "Day19: part1:beacons0 " ++ show (sort $ (\k -> head ts (head scanners !! k - head scannerPositions)) <$> firstMapKeys)
+
+  --putStrLn $ "Day19: part1:beacons0 " ++ show (head ts (1,2,3))
 
 
+  --putStrLn $ "Day19: part1:beacon1 " ++ show (scannerPositions!!0)
+  --putStrLn $ "Day19: part1:beacon2 " ++ show (scannerPositions!!0 + (ts!!0) (scannerPositions!!2) + (ts!!2) ((ts!!3) (scannerPositions!!3)))
+  --putStrLn $ "Day19: part1:beacon3 " ++ show (scannerPositions!!0 + (ts!!0) (scannerPositions!!1))
+  --putStrLn $ "Day19: part1:beacon4 " ++ show (scannerPositions!!0 + (ts!!0) (scannerPositions!!2))
 
-  --putStrLn $ "Day19: part1:mp " ++ show (second M.size <$> beaconMaps)
-  --putStrLn $ "Day19: part1:mp " ++ show (sort $ head transforms <$> scanners !! 1)
-  --putStrLn $ "Day19: part1:mp " ++ show (sort $ scanners !! 0)
-  putStrLn $ "Day19: part1:mp " ++ show (fst <$> beaconMaps)
-  putStrLn $ "Day19: part1:mp " ++ show (ppp)
-  --putStrLn $ "Day19: part1:mp " ++ show (findAllMappings scanners)
+  putStrLn $ "Day19: part1:scanners " ++ show (length scanners)
+  putStrLn $ "Day19: part1:filteredTransformations " ++ show ((\t -> (s1 t, s2 t)) <$> filteredTransformations)
+  putStrLn $ "Day19: part1:beacons " ++ show (length $ nub $ convertBeacons scanners filteredTransformations)
+
   
   
   

@@ -28,6 +28,7 @@ import Day21
 import Day22
 import Day23
 import Day24
+import Day24b
 import Day25
 import qualified Data.Functor as Projects
 
@@ -62,12 +63,12 @@ libMain = do
   --timeIt day17
   --timeIt day18
   --timeIt day19
-  timeIt day20
+  --timeIt day20
   --timeIt day21
   --timeIt day22
   --timeIt day23
   --timeIt day24
-  --timeIt day25
+  timeIt day25
 
 
 

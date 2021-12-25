@@ -71,7 +71,7 @@ day20 = do
   let (code, image@(_, mp)) = parse ls
       enhancedImage = iterate (enhance code) image !! 2
   putStrLn $ "Day20: part1: " ++ show (pixels $ iterate (enhance code) image !! 2)
-  --putStrLn $ "Day20: part1: " ++ show (pixels $ iterate (enhance code) image !! 50)
+  putStrLn $ "Day20: part1: " ++ show (pixels $ iterate (enhance code) image !! 50)
 
   return ()
 
