@@ -43,6 +43,7 @@ dependencies:
 - memoize
 - search-algorithms
 - MissingH
+- pqueue
 
 library:
   source-dirs: src
