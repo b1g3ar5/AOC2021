@@ -29,7 +29,7 @@ data Packet = Packet {ver :: Int, typeId :: Int, payload :: Either Int [Packet]}
 
 
 toInt :: String -> Int
-toInt [] = error "Run out of digits"
+toInt [] = error "Run out of digits in toInt"
 toInt [c] = if c=='1' then 1 else 0
 toInt s = 2 * toInt (init s) + if last s =='1' then 1 else 0
 
@@ -39,8 +39,9 @@ type Parser a = String -> (a,String)
 
 parsePacket :: Parser Packet
 parsePacket s
+  | length s < 6 = error $ "parsePacket: String not long enough: " ++ s
   | t==4 = (Packet v t (Left lit), rem1)
-  | otherwise = (Packet v t (Right op), rem1)
+  | otherwise = (Packet v t (Right op), rem2)
   where
     v = toInt $ take 3 s
     t = toInt $ take 3 $ drop 3 s
@@ -53,24 +54,23 @@ parseLiteral = go []
   where
     go _ [] = error "Ran out of data in parse"
     go acc (t:ts)
-      | t == '1' = go (acc ++ take 4 ts) $ drop 4 ts
+      | t == '1' =  go (acc ++ take 4 ts) $ drop 4 ts
       | t == '0' = (toInt $ acc ++ take 4 ts, drop 4 ts)
-      | otherwise = error "Got a character other than a [0|1]"
+      | otherwise = error "parseLiteral: Got a character other than a [0|1]"
 
 
 parseOperator :: Parser [Packet]
 parseOperator s
-  | lenId == '0' = (subPackets2, rem2 ++ drop (lengthOfsubpackets + 16) s)
+  | lenId == '0' = (subPackets2, drop (lengthOfSubpackets + 16) s)
   | lenId == '1' = (subPackets1, rem1)
   | otherwise = undefined
   where
     lenId = if null s then error "s is null in parseOperator" else head s
     numberOfSubpackets = toInt $ take 11 $ tail s
-    lengthOfsubpackets = toInt $ take 15 $ tail s
+    lengthOfSubpackets = toInt $ take 15 $ tail s
 
     (subPackets1, rem1) = parseByNumber numberOfSubpackets [] $ drop 12 s
-    (subPackets2, rem2) = parseByLength [] $ take lengthOfsubpackets $  drop 16 s
-
+    (subPackets2, rem2) = parseByLength [] $ take lengthOfSubpackets $  drop 16 s
 
     parseByNumber :: Int -> [Packet] -> Parser [Packet]
     parseByNumber n acc s
@@ -111,7 +111,6 @@ day16 = do
   inLines <- getLines 16
   let ls = head inLines --test7
   putStrLn $ "Day16: part1: " ++ show (versionTotal $ fst $ parsePacket $ concat $ fromHex <$> ls)
-  putStrLn $ "Day16: part2: " ++ show (value $ fst $ parsePacket $ concat $ fromHex <$> ls)
+  putStrLn $ "Day16: part1: " ++ show (value $ fst $ parsePacket $ concat $ fromHex <$> ls)
 
   return ()
-

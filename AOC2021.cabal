@@ -32,17 +32,17 @@ library
       Day13
       Day14
       Day15
-      Day15b
       Day16
       Day17
       Day18
       Day19
       Day2
       Day20
+      Day20b
+      Day20c
       Day21
       Day22
       Day23
-      Day23Old
       Day24
       Day24b
       Day25
@@ -53,6 +53,10 @@ library
       Day7
       Day8
       Day9
+      Djikstra
+      Frames
+      Heap
+      HeapIndexed
       Lib
       Paths
       Search
@@ -75,7 +79,9 @@ library
     , containers
     , data-fix
     , distributive
+    , grids
     , hashable
+    , heap
     , megaparsec
     , memoize
     , mtl
@@ -117,7 +123,9 @@ executable AOC2021-exe
     , containers
     , data-fix
     , distributive
+    , grids
     , hashable
+    , heap
     , megaparsec
     , memoize
     , mtl
@@ -160,7 +168,9 @@ test-suite AOC2021-test
     , containers
     , data-fix
     , distributive
+    , grids
     , hashable
+    , heap
     , megaparsec
     , memoize
     , mtl

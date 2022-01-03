@@ -3,37 +3,12 @@
 module Day11 where
 
 
-import Utils
+import Utils (Map, getLines, neighbours8, steadyState, Coord)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
---import Data.Bits (Bits(xor))
-
-import Data.Functor.Compose (Compose(..))
-import qualified Data.Vector as V
-import Data.Bool (bool)
-import Data.Distributive (Distributive(..))
-import Data.Functor.Rep (Representable(..), distributeRep)
-import Data.Functor.Identity (Identity(..))
-import Control.Arrow ((***))
-import Control.Comonad.Representable.Store (Store(..), StoreT(..), store, experiment, ComonadStore(..), runStore)
-import Control.Comonad (Comonad(..))
-
-import Debug.Trace
 
 
-gridSize :: Int
-gridSize = 5
-
-
-inBounds x = x>=0 && x < gridSize
-
-coordInBounds (x,y) = inBounds x && inBounds y
-
--- A grid of (flashCount, energy)
 type Grid = Map Coord (Int, Int)
-
-showGrid :: Grid -> String
-showGrid g = unlines $ concat <$> transpose (chunksOf gridSize (show . snd . snd <$> sortOn fst (M.toList g)))
 
 
 parseGrid :: [String] -> Grid
@@ -66,8 +41,8 @@ day11 = do
   inLines <- getLines 11
   let grid = parseGrid inLines
       
-  putStrLn $ "Day11: part1:\n" ++ show (sum $ M.map fst $ iterate play grid !! 100)
-  putStrLn $ "Day11: part2:\n" ++ show (simultaneousFlash 0 grid)
+  putStrLn $ "Day11: part1: " ++ show (sum $ M.map fst $ iterate play grid !! 100)
+  putStrLn $ "Day11: part2: " ++ show (simultaneousFlash 0 grid)
 
   return ()
 

@@ -29,7 +29,6 @@ module Utils (
   , neighbours8
   , span
   , race
-  , converge
   , chunksOf
   , first
   , second
@@ -63,28 +62,34 @@ module Utils (
   , safeHead
   , delete
   , replace
+  , trace
+  , Semigroup(..)
+  , Monoid(..)
+  , bool
 )
 where
 
 
 import qualified Data.Set as S
-import qualified Data.HashSet as HS
+--import qualified Data.HashSet as HS
 import qualified Data.Vector as V
-import qualified Data.Vector.Unboxed.Mutable as VM
 import qualified Data.Map.Strict as M
 import qualified Data.IntMap.Strict as IM
 import Data.Sequence (Seq(..), (><), (|>), (<|))
-import Data.List
-import Data.List.Split
-import Data.List.Utils
-import Data.Bifunctor
-import Data.Tuple
-import Data.Maybe
-import Data.Char
-import Control.Monad
+import Data.List ( foldl', transpose, (\\), delete, group, intercalate, intersect, nub, sort, sortOn )
+import Data.List.Split (chunksOf, splitOn)
+import Data.List.Utils (replace)
+import Data.Bifunctor (Bifunctor(bimap, first, second))
+import Data.Tuple (swap)
+import Data.Maybe (catMaybes, fromJust, fromMaybe, isJust, isNothing)
+import Data.Char (isAsciiLower, isAsciiUpper, toLower, toUpper)
+import Control.Monad (guard)
 import Control.Monad.ST (runST, ST(..))
 import System.TimeIt ( timeIt )
-import Data.Semigroup (Semigroup)
+import Data.Semigroup (Semigroup(..))
+import Data.Monoid (Monoid(..))
+import Debug.Trace (trace)
+import Data.Bool
 
 --- Things to add
 
@@ -130,13 +135,14 @@ fix :: Eq a => (a -> a) -> a
 fix f = x where x = f x
 
 
--- Should this just call fix somehow?
-converge :: Eq a => (a -> a) -> a -> a
-converge f x 
-  | x == fx = fx
-  | otherwise = converge f fx
-  where
-    fx = f x
+steadyState :: Eq a => (a -> a) -> a -> a
+steadyState f x = if f x == x then x else steadyState f (f x)
+
+
+steadyState' :: Eq a => (a -> Maybe a) -> a -> Maybe a
+steadyState' f x = case f x of
+                     Nothing -> Just x
+                     Just y -> steadyState' f y
 
 
 -- This takes 2 predicates isFinished and isOK
@@ -265,15 +271,6 @@ leftOf x = x + (-1,0)
 rightOf x = x + (1,0)
 above x = x + (0,-1)
 below x = x + (0,1)
-
-
-steadyState :: Eq a => (a -> a) -> a -> a
-steadyState f x = if f x == x then x else steadyState f (f x)
-
-steadyState' :: Eq a => (a -> Maybe a) -> a -> Maybe a
-steadyState' f x = case f x of
-                     Nothing -> Just x
-                     Just y -> steadyState' f y
 
 
 safeHead :: [a] -> Maybe a

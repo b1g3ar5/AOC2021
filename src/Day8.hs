@@ -4,9 +4,6 @@ module Day8 where
 
 import Utils
 import Data.List (permutations, sort, find)
-import Data.Vector.Unboxed.Base (Vector(V_Bool))
-import Data.Maybe 
-import qualified Alg as Data
 
 
 -- Here I just use brute force. There are only 5040 permuations and 200 Enrties

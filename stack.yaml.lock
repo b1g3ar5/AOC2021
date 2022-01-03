@@ -39,6 +39,13 @@ packages:
       sha256: 6cd6a7213615d72a7db3234c7fcd4346ceb4889bc8fb14b302b5878768018fcd
   original:
     hackage: MissingH-1.4.3.0
+- completed:
+    hackage: grids-0.5.0.1@sha256:1230e0e2249ce74ad092329410b1a87c5bcbeb88aa148f0131bdc43385ba3362,3081
+    pantry-tree:
+      size: 1418
+      sha256: 09e4861f855e39b09ca76648e7dd0011ae0eeff78a40eb4772e11c05e1a24e16
+  original:
+    hackage: grids-0.5.0.1
 snapshots:
 - completed:
     size: 586296

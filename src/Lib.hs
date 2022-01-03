@@ -24,6 +24,8 @@ import Day17
 import Day18
 import Day19
 import Day20
+import Day20b
+import Day20c
 import Day21
 import Day22
 import Day23
@@ -31,6 +33,7 @@ import Day24
 import Day24b
 import Day25
 import qualified Data.Functor as Projects
+import Frames
 
 {-
 Projects...
@@ -44,31 +47,33 @@ Day12 as a hylomorphism?
 
 libMain :: IO ()
 libMain = do
-  --timeIt day1
-  --timeIt day2
-  --timeIt day3
-  --timeIt day4
-  --timeIt day5 
-  --timeIt day6
-  --timeIt day7
-  --timeIt day8
-  --timeIt day9
-  --timeIt day10
-  --timeIt day11
-  --timeIt day12
-  --timeIt day13
-  --timeIt day14
-  timeIt day15
-  --timeIt day16
-  --timeIt day17
-  --timeIt day18
-  --timeIt day19
-  --timeIt day20
-  --timeIt day21
-  --timeIt day22
-  --timeIt day23
-  --timeIt day24
-  --timeIt day25
+  timeIt day1
+  timeIt day2
+  timeIt day3
+  timeIt day4
+  timeIt day5 
+  timeIt day6
+  timeIt day7
+  timeIt day8
+  timeIt day9
+  timeIt day10
+  timeIt day11
+  timeIt day12
+  timeIt day13
+  timeIt day14
+  timeIt day15  -- 5s
+  timeIt day16
+  timeIt day17
+  timeIt day18 -- 3s
+  timeIt day19
+  timeIt day20 -- 8s
+  --timeIt day20b
+  --timeIt day20c
+  timeIt day21
+  timeIt day22
+  timeIt day23 -- 10s
+  timeIt day24
+  timeIt day25 -- 10s
 
 
 

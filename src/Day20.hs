@@ -1,80 +1,87 @@
+{-# language GeneralizedNewtypeDeriving #-}
+{-# language TypeFamilies #-}
+
 module Day20 where
 
+import Utils (getLines, bool)
+import Data.Functor.Compose (Compose(..))
+import qualified Data.Vector as V
+import Data.Distributive (Distributive(..))
+import Data.Functor.Rep (Representable(..), distributeRep)
+import Data.Functor.Identity (Identity(..))
+import Control.Comonad.Representable.Store (Store(..), StoreT(..), store, experiment)
+import Control.Comonad (Comonad(..))
 
-import Utils ( Coord, Map, fromMaybe, getLines )
-import qualified Data.Map.Strict as M
+
+-- Using thw Store comonad - 8s, still quite slow
+
+newtype VBounded a = VBounded (V.Vector a) deriving (Eq, Show, Functor, Foldable)
 
 
-type Image = (Bool, Map Coord Bool)
+instance Distributive VBounded where
+  distribute = distributeRep
+
+gridSize :: Int
+gridSize = 200
+
+instance Representable VBounded where
+  type Rep VBounded = Int
+  index (VBounded v) i = v V.! (i `mod` gridSize)
+  tabulate desc = VBounded $ V.generate gridSize desc
+
+type Grid a = Store (Compose VBounded VBounded) a
+type Coord = (Int, Int)
 type Code = [Bool]
 
-bounds :: Map Coord a -> ((Int, Int),(Int, Int))
-bounds mp = ((xmin, ymin), (xmax, ymax))
+code :: Code
+code = (=='#') <$> "#.#.#.#.#......#.#.#.#.##..#.##.##..#..##...#.#.#.#...##.##.##.###....#..#...#.#..###.#...#..##.#.###..#..####.###...#.#.#..##..##.##..##..###..#....#.#....#####.#...###...#.#....###...#..##.##..#..#.##..###..#.##.###..#.####...#.##.....#.###...#.##.##.#.#######...#.###..##..##..#.#.#.#####...#....#.....##.#.#...##.######....#..#......#.#.#.#.##...######.#.#####..#####..#.#.#.#.###.#.#....#..##..#..#.#.#..##....##..#.#.......##...#..####.####.#.#..#.###..#...#......###...#...#.##.#.####..#.#....###.####..#."
+
+
+parse :: [String] -> Grid Bool
+parse css = mkGrid image
   where
-    ks = M.keys mp
-    xmin = minimum $ fst <$> ks
-    xmax = maximum $ fst <$> ks
-    ymin = minimum $ snd <$> ks
-    ymax = maximum $ snd <$> ks
+    offset = 50
+    image = fst <$> filter snd (concat $ (\(y,cs) -> (\(x,c) -> ((y+offset,x+offset), c=='#')) <$> zip [0..] cs) <$> zip [0..] (tail (tail css)))
 
--- With a margin of 3 each side
-toKeys :: Map Coord a -> [Coord]
-toKeys mp = concat $ (\y -> (y,) <$> [(xmin-3)..(xmax+3)]) <$> [(ymin-3)..(ymax+3)]
+
+mkGrid :: [Coord] -> Grid Bool
+mkGrid xs = store lookup (0, 0)
   where
-    ((xmin, ymin), (xmax, ymax)) = bounds mp  
+    lookup crd = crd `elem` xs
 
 
-render :: Image -> String
-render (_, mp) = unlines $ (\y -> (\x -> if mp M.! (x,y) then '#' else '.') <$> [minx..maxx]) <$> [miny..maxy]
+type Rule = Grid Bool -> Bool
+
+
+neighbours :: Coord -> [Coord]
+neighbours (x, y) = [(x+dx, y+dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1]]
+
+
+basicRule :: Rule
+basicRule g = code !! n
   where
-    ks = M.keys mp
-    minx = minimum $ fst <$> ks
-    maxx = maximum $ fst <$> ks
-    miny = minimum $ snd <$> ks
-    maxy = maximum $ snd <$> ks
+    n = toInt9 $ experiment neighbours g
 
 
-pixels :: Image -> Int 
-pixels (_, mp) = length $ filter id $ M.elems mp
-
-
-parse :: [String] -> (Code, Image)
-parse css = ((=='#') <$> head css, (False, image))
+toInt9 :: Code -> Int
+toInt9 [x1,x2,x3,x4,x5,x6,x7,x8,x9] = n x1 * 256 + n x2 * 128 + n x3 * 64 + n x4 * 32 + n x5 * 16 + n x6 * 8 + n x7 * 4 + n x8 * 2 + n x9
   where
-    image = M.fromList $ concat $ (\(y,cs) -> (\(x,c) -> ((x,y), c=='#')) <$> zip [0..] cs) <$> zip [0..] (tail (tail css))
+    n b = if b then 1 else 0
+toInt9 bs = error $ "We need 9 booleans: " ++ show bs
 
 
-neighbourhood :: Coord -> [Coord]
-neighbourhood (x,y) = [(i,j) | j<-[y-1,y,y+1], i<-[x-1,x,x+1]]
-
-
-enhance :: Code -> Image -> Image
-enhance lcode (d, lmp) = (lcode !! toInt (replicate 9 d), M.fromList (go <$> toKeys lmp))
-  where
-    go :: Coord -> (Coord, Bool)
-    go pos = (pos, lcode !! ix)
-      where
-        neighbours = neighbourhood pos
-        cx = (\n -> M.findWithDefault d n lmp) <$> neighbours
-        ix = toInt $ (\n -> M.findWithDefault d n lmp) <$> neighbours
-
-
-toInt :: [Bool] -> Int
-toInt [] = error "We've run out of digits in Day20:toInt"
-toInt [c] = if c then 1 else 0
-toInt s = 2 * toInt (init s) + if last s then 1 else 0
+pixels :: Grid Bool -> Int
+pixels (StoreT (Identity (Compose g)) _) =  sum $ sum . (bool 0 1 <$>) <$>  g
 
 
 day20 :: IO ()
 day20 = do
   ls <- getLines 20
-  let (code, image@(_, mp)) = parse ls
-      enhancedImage = iterate (enhance code) image !! 2
-  putStrLn $ "Day20: part1: " ++ show (pixels $ iterate (enhance code) image !! 2)
-  putStrLn $ "Day20: part1: " ++ show (pixels $ iterate (enhance code) image !! 50)
+  let grid = parse ls
+
+  putStrLn $ "Day20: Store comonad, part1: " ++ show (pixels $ iterate (extend basicRule) grid !! 2)
+  putStrLn $ "Day20: Store comonad, part2: " ++ show (pixels $ iterate (extend basicRule) grid !! 50)
 
   return ()
-
-
 
 

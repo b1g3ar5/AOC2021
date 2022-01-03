@@ -4,13 +4,12 @@ module Day18 where
 import Utils
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Control.Monad.Combinators
 import Data.Void
-import Debug.Trace
 
 type Parser = Parsec Void String
 
 type Level = Int 
+
 
 -- A tree, nodes labelled with the depth
 data Tree = Leaf (Level, Int) | Node Level Tree Tree deriving (Show, Eq)
@@ -37,9 +36,11 @@ increment :: Int -> Tree -> Tree
 increment n (Leaf (m, x)) = Leaf (n+m, x)
 increment n (Node m l r) = Node (n+m) (increment n l) (increment n r)
 
+
 showTree :: Tree -> String
 showTree (Leaf (n,x)) = show x
 showTree (Node n l r) = "[" ++ showTree l ++ "," ++ showTree r ++ "]"
+
 
 parseInt :: Parser Int
 parseInt = do

@@ -44,6 +44,8 @@ dependencies:
 - search-algorithms
 - MissingH
 - pqueue
+- heap
+- grids
 
 library:
   source-dirs: src

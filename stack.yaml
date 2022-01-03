@@ -12,3 +12,4 @@ extra-deps:
 - sized-grid-0.2.0.1@sha256:f269a9a658a66d5b9925f22c163b61c62a041670bfcb84a8748a969ceeb5dc9c,2687
 - memoize-1.1.1
 - MissingH-1.4.3.0
+- grids-0.5.0.1

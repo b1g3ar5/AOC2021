@@ -32,7 +32,7 @@ day6' = do
 
 -- Now the MultiSet this is sometimes called a bag.
 -- It keeps track of the counts for you so you can just forget all about them
--- but still get the performance as though you were trcking them...
+-- but still get the performance as though you were tracking them...
 
 run :: Int -> MultiSet Int -> Int
 run 0 ms = MS.size ms
