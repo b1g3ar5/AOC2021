@@ -6,7 +6,7 @@ Solutions to the Advent of Code 2021:
 
 My solutions try to be neat and I'm hoping understandable. If I look at the code in a years time I hope to be able to understand it.
 
-I have 3 which take longed than 5 seconds
+I have 3 which take longer than 5 seconds:
 
 Day20 - applying a filter to a 150x150 grid which takes 8 seconds using the Store comonad
          (see https://chrispenner.ca/posts/conways-game-of-life)
