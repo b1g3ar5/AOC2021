@@ -13,7 +13,7 @@ Day20 - applying a filter to a 150x150 grid which takes 8 seconds using the Stor
 
 Day23 - a Dijkstra search to find the solution of a little game which takes 10 seconds
 
-Day25 - which takes 10 seconds to update movement in a grid until iy reaches a gridlock
+Day25 - which takes 10 seconds to update movement in a grid until it reaches a gridlock
 
 
 Comments:
