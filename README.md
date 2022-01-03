@@ -19,12 +19,19 @@ Day25 - which takes 10 seconds to update movement in a grid until it reaches a g
 Comments:
 
 Day6 - using the MultiSet - new to me and useful
+
 Day10 - I used view patterns which are again new to me and can be neat
+
 Day11 - another grid (of octopuses) which I might use Store next time as I did in Day20
+
 Day12 - counting paths through a graph solved initially with a dfs and then resolved with a hylomorphism
+
 Day18 - tree manipulation, I think this could be neatened up a lot with morphisms ?!
+
 Day19 - so complicated that I had to write a separate code file for the frames of the scanners...
+
 Day20 - a grid with a filter to be applied. I did 3 representations of the grid - simple map, store comonad
         and a fixed sized gris with the grids library. The grids library was complicated and slow so I
         prefer the Store comonad.
+
 Day21 - memoisation using memoFix from the MemoTrie library
