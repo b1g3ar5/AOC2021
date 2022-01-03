@@ -22,9 +22,9 @@ Day6 - using the MultiSet - new to me and useful
 
 Day10 - I used view patterns which are again new to me and can be neat
 
-Day11 - another grid (of octopuses) which I might use Store next time as I did in Day20
+Day11 - a grid of octopuses, I might use Store next time as I did in Day20
 
-Day12 - counting paths through a graph solved initially with a dfs and then resolved with a hylomorphism
+Day12 - counting paths through a graph solved initially with a dfs and then re-solved with a hylomorphism
 
 Day18 - tree manipulation, I think this could be neatened up a lot with morphisms ?!
 
