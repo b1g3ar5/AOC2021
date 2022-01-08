@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Day18 where
 
 
@@ -11,8 +13,8 @@ type Parser = Parsec Void String
 type Level = Int 
 
 
--- A tree, nodes labelled with the depth
-data Tree = Leaf (Level, Int) | Node Level Tree Tree deriving (Show, Eq)
+
+data Tree = Leaf (Int, Int) | Tree Int Tree Tree deriving (Show, Eq)
 
 
 isLeaf :: Tree -> Bool 
@@ -22,24 +24,24 @@ isLeaf _ = False
 
 getInt :: Tree -> Int
 getInt (Leaf (l,x)) = x
-getInt t = error $ "can't getInt from: " ++ showTree t
+getInt t = error $ "can't getInt from the tree: " -- ++ showTree t
 
 
 addR, addL :: Int -> Tree -> Tree
 addR x (Leaf (lab,y)) = Leaf (lab, x+y)
-addR x (Node n lt rt) = Node n lt (addR x rt)
+addR x (Tree n lt rt) = Tree n lt (addR x rt)
 addL x (Leaf (lab,y)) = Leaf (lab, x+y)
-addL x (Node n lt rt) = Node n (addL x lt) rt 
+addL x (Tree n lt rt) = Tree n (addL x lt) rt 
 
 
 increment :: Int -> Tree -> Tree
 increment n (Leaf (m, x)) = Leaf (n+m, x)
-increment n (Node m l r) = Node (n+m) (increment n l) (increment n r)
+increment n (Tree m l r) = Tree (n+m) (increment n l) (increment n r)
 
 
 showTree :: Tree -> String
 showTree (Leaf (n,x)) = show x
-showTree (Node n l r) = "[" ++ showTree l ++ "," ++ showTree r ++ "]"
+showTree (Tree n l r) = "[" ++ showTree l ++ "," ++ showTree r ++ "]"
 
 
 parseInt :: Parser Int
@@ -48,6 +50,7 @@ parseInt = do
   return $ read cs
 
 
+-- parsePair = parse 2 elements
 parsePair :: Int -> Parser Tree
 parsePair n = do
   single '['
@@ -55,55 +58,54 @@ parsePair n = do
   single ','
   y <- parseElement (n+1)
   single ']'
-  return $ Node n x y
+  return $ Tree n x y
 
 
-parseElement :: Level -> Parser Tree 
+-- parseElement = parseInt OR parsePair
+parseElement :: Level -> Parser Tree
 parseElement n = ((\i -> Leaf (n, i)) <$> parseInt) <|> parsePair n
 
 
--- Returns: hasExploded, carryLeft, carryRight, Tree
-explode :: Tree -> (Bool, Int, Int, Tree)
-explode (Leaf x) = (False, 0, 0, Leaf x)
-explode node@(Node lvl l r)
-  | lvl>3 && isLeaf l && isLeaf r = (True, getInt l, getInt r, Leaf (lvl,0)) 
-  | lvl>3 && isLeaf l = (True, 0, rr, Node lvl (addR rl l) rt) -- explode the right
-  | lvl>3 = (True, ll, 0, Node lvl lt (addL lr rt)) -- explode the left
-  | otherwise = 
-      if el then
-        (True, ll, 0, Node lvl lt (addL lr r))
-      else        
-        if er then
-          (True, 0, rr, Node lvl (addR rl l) rt)
-        else
-          (False, 0, 0, Node lvl l r)
+explode :: Tree -> Maybe (Tree, (Int, Int))
+explode (Leaf x) = Nothing
+explode node@(Tree lvl l r)
+  | lvl>3 && isLeaf l && isLeaf r = Just (Leaf (lvl,0), (getInt l, getInt r)) 
+  | lvl>3 && isLeaf l = Just (Tree lvl (addR rl l) rt, (0, rr)) -- explode the right
+  | lvl>3 = Just (Tree lvl lt (addL lr rt), (ll, 0)) -- explode the left
+  | isJust mel = Just (Tree lvl lt (addL lr r), (ll, 0))
+  | isJust mer = Just (Tree lvl (addR rl l) rt, (0, rr))
+  | otherwise = Nothing
   where
-    (el, ll, lr, lt) = explode l        
-    (er, rl, rr, rt) = explode r
+    mel = explode l 
+    (lt, (ll, lr)) = fromJust mel       
+    mer = explode r
+    (rt, (rl, rr)) = fromJust mer      
+    
 
-
-split :: Tree -> Tree
-split (Node n l r) = Node n sl (if sl == l then split r else r)
+split :: Tree  -> Maybe Tree
+split (Tree n l r)
+  | isJust msl = Just $ Tree n (fromJust msl) r
+  | isJust msr = Just $ Tree n l (fromJust msr)
+  | otherwise = Nothing
   where
-    sl = split l
-split (Leaf (n, x)) = if x > 9 then Node n (Leaf (n+1, d2)) (Leaf (n+1, d2 + if even x then 0 else 1)) else Leaf (n, x)
+    msl = split l
+    msr = split r
+split (Leaf (n, x)) = if x > 9 then  Just $ Tree n (Leaf (n+1, d2)) (Leaf (n+1, d2 + if even x then 0 else 1)) else Nothing
   where
     d2 = x `div` 2
 
 
 addTree :: Tree -> Tree -> Tree
-addTree l r = reduce $ Node 0 (increment 1 l) (increment 1 r)
+addTree l r = reduce $ Tree 0 (increment 1 l) (increment 1 r)
     
 
 reduce :: Tree -> Tree
-reduce = steadyState (split . steadyState (t4 . explode))
-  where
-    t4 (_,_,_,x) = x
+reduce t = maybe t reduce (fst <$> explode t <|> split t)
 
 
 magnitude :: Tree -> Int
 magnitude (Leaf (n, x)) = x
-magnitude (Node _ l r) = 3 * magnitude l + 2 * magnitude r
+magnitude (Tree _ l r) = 3 * magnitude l + 2 * magnitude r
 
 
 maxMagnitude :: [Tree] -> Int
@@ -118,4 +120,5 @@ day18 = do
   putStrLn $ "Day18: part2: " ++ show (magnitude $ foldl1 addTree ns) 
   putStrLn $ "Day18: part2: " ++ show (maxMagnitude ns)
   return ()
+
 

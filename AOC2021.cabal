@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Covid
       Day1
       Day10
       Day11
@@ -35,6 +36,7 @@ library
       Day16
       Day17
       Day18
+      Day18b
       Day19
       Day2
       Day20
@@ -57,6 +59,7 @@ library
       Frames
       Heap
       HeapIndexed
+      Histo
       Lib
       Paths
       Search

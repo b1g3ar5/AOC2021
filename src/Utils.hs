@@ -66,6 +66,7 @@ module Utils (
   , Semigroup(..)
   , Monoid(..)
   , bool
+  , fix
 )
 where
 
