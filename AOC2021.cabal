@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Covid
       Day1
       Day10
       Day11
@@ -55,14 +54,10 @@ library
       Day7
       Day8
       Day9
-      Djikstra
       Frames
       Heap
       HeapIndexed
-      Histo
       Lib
-      Paths
-      Search
       Utils
   other-modules:
       Paths_AOC2021
