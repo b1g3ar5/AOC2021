@@ -1,14 +1,21 @@
+{-# language FlexibleInstances, GeneralizedNewtypeDeriving #-}
+{-# language TypeFamilies #-}
+
 module Day25 where
 
 
 import Utils hiding (Empty)
 import qualified Data.Map.Strict as M
 
--- Simple but very slow...
 
-isCuc, notCuc :: Char -> Bool
+-- LIST VERSION - simple but very slow...
+
+isCuc, notCuc, isDn, isRt :: Char -> Bool
 isCuc c = c `elem` ">v"
 notCuc = not . isCuc
+isDn = (=='v')
+isRt = (=='>')
+
 
 move :: Char -> String -> String
 move !cuc !cs = go [] cs
@@ -43,26 +50,28 @@ steadyStateWithCount n f x = if fx == x then (n+1,x) else steadyStateWithCount (
 day25 :: IO ()
 day25 = do
   ls <- getLines 25
+  --let ls = test
   let grid = parse ls
-  --putStrLn $ "Day25: part1:\n" ++ show (fst $ steadyStateWithCount 0 loop ls)
-  putStrLn $ "Day25: part1:\n" ++ show (fst $ steadyStateWithCount 0 update grid)
+  putStrLn $ "Day25: part1:Map\n" ++ show (fst $ steadyStateWithCount 0 update grid)
 
   return ()
 
 
--- Maps might be a bit quicker?
+-- MAP VERSION - will be quicker
 
-data Cell = Empty | Lefter | Downer deriving (Eq, Show)
+data Cell = Empty | Righter | Downer deriving (Eq, Show)
 type Grid = Map Coord Cell
 
 
 showCell :: Cell -> Char
 showCell Empty = '.'
-showCell Lefter = '>'
+showCell Righter = '>'
 showCell Downer = 'v'
 
+
+parseCell :: Char -> Cell
 parseCell '.' = Empty
-parseCell '>' = Lefter
+parseCell '>' = Righter
 parseCell 'v' = Downer
 parseCell c = error $ "This is not a fish: " ++ [c]
 
@@ -76,21 +85,24 @@ width = 139
 height = 137
 
 
-left, down :: Coord -> Coord
-left (x,y) = ((x+1) `mod` width, y)
-down (x,y) = (x, (y+1) `mod` height)
+lt, dn, rt, up :: Coord -> Coord
+lt (x,y) = ((x-1) `mod` width, y)
+dn (x,y) = (x, (y+1) `mod` height)
+rt (x,y) = ((x+1) `mod` width, y)
+up (x,y) = (x, (y-1) `mod` height)
 
 
 update :: Grid -> Grid
-update mp = downMap `M.union` mp1
+update mp = downMoves `M.union` rightMap
   where
-    leftMoves = M.filterWithKey (\k c -> c == Lefter && (mp M.! left k) == Empty) mp
-    leftMap = M.fromList $ concat $ M.mapWithKey (\k c -> [(k, Empty), (left k, Lefter)]) leftMoves
-    mp1 = leftMap `M.union` mp
-    downMoves = M.filterWithKey (\k c -> c == Downer && (mp1 M.! down k) == Empty) mp1
-    downMap = M.fromList $ concat $ M.mapWithKey (\k c -> [(k, Empty), (down k, Downer)]) downMoves
+    rightMovable = M.filterWithKey (\k c -> c == Righter && (mp M.! rt k) == Empty) mp
+    rightMoves = M.fromList $ concat $ M.mapWithKey (\k c -> [(k, Empty), (rt k, Righter)]) rightMovable
+    rightMap = rightMoves `M.union` mp
+    downMovable = M.filterWithKey (\k c -> c == Downer && (rightMap M.! dn k) == Empty) rightMap
+    downMoves = M.fromList $ concat $ M.mapWithKey (\k c -> [(k, Empty), (dn k, Downer)]) downMovable
 
 
 render :: Grid -> String
 render mp = unlines $ (\y -> (\x -> showCell $ mp M.! (x,y)) <$> [0..(width-1)]) <$> [0..(height-1)]
+
 

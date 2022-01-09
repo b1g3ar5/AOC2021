@@ -3,23 +3,21 @@
 module Day18b where
 
 
-import Utils
-import Data.Void
+import Utils (fromJust, isJust, getLines, second)
 import Control.Arrow  ((<<<), (>>>), (&&&))
-import Control.Applicative
+import Control.Applicative (Alternative((<|>)))
 
 
--- A version (partly) using anamorphism to make the tree (instead of parser) and
+-- A version (partly) using anamorphism to make the tree and
 -- catamorphism and paramorphism to tear it down
 
 -- makeTree = anamorphism
--- split, explode = paramorphism (so that one side recurses and the other short-cuts)
+-- split, explode = paramorphism (so that one side recurses and the other shortcuts)
 -- show, maxumum = catamorphism
 
 -- I was hoping to use hylomorhism, but I couldn't work out how to do reduce (and therefore add) which applies 
 -- explode until it gets to a steady state etc.
 
--- So, this versio is slower than the original (8secs rather than 3secs)
 
 type Algebra f a = f a -> a
 cata :: (Functor f) => Algebra f a -> Fix f -> a
@@ -33,6 +31,7 @@ para f = unFix >>> fmap (id &&& para f) >>> f
 newtype Fix f = Fix { unFix :: f (Fix f) }
 
 
+type Level = Int 
 data TreeF r = Leaf (Int, Int) | Tree Int r r deriving (Show, Functor, Eq)
 type Tree = Fix TreeF
 
@@ -43,9 +42,6 @@ instance Eq Tree where
 
 instance Show Tree where
   show (Fix t1)  = "Fix " ++ show t1
-
-
-type Level = Int 
 
 
 isLeaf :: Tree -> Bool 
@@ -91,6 +87,8 @@ showTree = cata alg
 
 explode :: Tree -> Maybe Tree
 explode t = fst <$> para explodeAlg t
+
+
 explodeAlg :: TreeF (Tree, Maybe (Tree, (Int, Int))) -> Maybe (Tree, (Int, Int))
 explodeAlg (Leaf x) = Nothing
 explodeAlg (Tree lvl (shortCircuitLeft, mrl) (shortCircuitRight, mrr))
@@ -107,6 +105,8 @@ explodeAlg (Tree lvl (shortCircuitLeft, mrl) (shortCircuitRight, mrr))
 
 split :: Tree -> Maybe Tree
 split = para splitAlg
+
+
 splitAlg :: TreeF (Tree, Maybe Tree) -> Maybe Tree
 splitAlg (Leaf (n,x)) = if x > 9 then Just $ Fix $ Tree n (Fix $ Leaf (n+1, d2)) (Fix $ Leaf (n+1, d2 + if even x then 0 else 1)) else Nothing
   where
@@ -116,22 +116,13 @@ splitAlg (Tree n (l, msl) (r, msr))
   | isJust msr = Just $ Fix $ Tree n l (fromJust msr)
   | otherwise = Nothing
 
-splitAlg' :: TreeF (Tree, Maybe (Tree, (Int, Int))) -> Maybe (Tree, (Int, Int))
-splitAlg' (Leaf x) = (,(0,0)) <$> splitAlg (Leaf x)
-splitAlg' (Tree n mtl mtr) = (,(0,0)) <$> splitAlg (Tree n (second (fst <$>) mtl) (second (fst <$>) mtr))
-
 
 explodeOrSplit :: Tree -> Maybe Tree
 explodeOrSplit t = fst <$> para explodeAlg t <|> para splitAlg t
-  where
-    alg t = explodeAlg t <|> splitAlg' t
 
 
 reduce :: Tree -> Tree
 reduce t = maybe t reduce (fst <$> para explodeAlg t <|> para splitAlg t)
-  where
-    alg t = explodeAlg t <|> splitAlg' t
-
 
 
 addTree :: Tree -> Tree -> Tree
@@ -160,7 +151,7 @@ makeCoalg (_, []) = error "Parse error"
 makeCoalg (n, [c]) = Leaf (n, read [c])
 makeCoalg (n, '[':cs) = Tree n (n+1, ls) (n+1, rs)
   where
-    -- Split the sring into a 'seed' strings for the left and right children
+    -- Split the string into a 'seed' strings for the left and right children
     -- ie. find the comma
     (ls, rs) = goSplit 1 "" cs
     goSplit 0 acc rem = error "Got to the closing ']' before the comma in goSplit"

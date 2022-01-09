@@ -3,17 +3,13 @@
 module Day18 where
 
 
-import Utils
-import Text.Megaparsec
-import Text.Megaparsec.Char
-import Data.Void
+import Utils (catMaybes, fromJust, isJust, getLines)
+import Text.Megaparsec ((<|>), Parsec, parseMaybe, single, some)
+import Text.Megaparsec.Char (digitChar)
+import Data.Void (Void)
 
 type Parser = Parsec Void String
-
 type Level = Int 
-
-
-
 data Tree = Leaf (Int, Int) | Tree Int Tree Tree deriving (Show, Eq)
 
 
@@ -50,7 +46,6 @@ parseInt = do
   return $ read cs
 
 
--- parsePair = parse 2 elements
 parsePair :: Int -> Parser Tree
 parsePair n = do
   single '['
@@ -61,7 +56,6 @@ parsePair n = do
   return $ Tree n x y
 
 
--- parseElement = parseInt OR parsePair
 parseElement :: Level -> Parser Tree
 parseElement n = ((\i -> Leaf (n, i)) <$> parseInt) <|> parsePair n
 
@@ -95,13 +89,13 @@ split (Leaf (n, x)) = if x > 9 then  Just $ Tree n (Leaf (n+1, d2)) (Leaf (n+1, 
     d2 = x `div` 2
 
 
-addTree :: Tree -> Tree -> Tree
-addTree l r = reduce $ Tree 0 (increment 1 l) (increment 1 r)
-    
-
 reduce :: Tree -> Tree
 reduce t = maybe t reduce (fst <$> explode t <|> split t)
 
+
+addTree :: Tree -> Tree -> Tree
+addTree l r = reduce $ Tree 0 (increment 1 l) (increment 1 r)
+    
 
 magnitude :: Tree -> Int
 magnitude (Leaf (n, x)) = x

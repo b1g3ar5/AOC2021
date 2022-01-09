@@ -65,17 +65,17 @@ libMain = do
   --timeIt day15  -- 5s
   --timeIt day16
   --timeIt day17
-  timeIt day18 -- 3s
-  timeIt day18b -- 3s
+  --timeIt day18
+  --timeIt day18b
   --timeIt day19
-  --timeIt day20 -- 8s
+  --timeIt day20 -- 9s
   --timeIt day20b
   --timeIt day20c
   --timeIt day21
   --timeIt day22
-  --timeIt day23 -- 10s
+  --timeIt day23 -- 11s
   --timeIt day24
-  --timeIt day25 -- 10s
+  timeIt day25 -- 11s
 
 
 

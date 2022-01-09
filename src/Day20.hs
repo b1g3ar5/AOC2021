@@ -13,7 +13,7 @@ import Control.Comonad.Representable.Store (Store(..), StoreT(..), store, experi
 import Control.Comonad (Comonad(..))
 
 
--- Using thw Store comonad - 8s, still quite slow
+-- Using the Store comonad - 8s, still quite slow
 
 newtype VBounded a = VBounded (V.Vector a) deriving (Eq, Show, Functor, Foldable)
 
@@ -24,14 +24,17 @@ instance Distributive VBounded where
 gridSize :: Int
 gridSize = 200
 
+
 instance Representable VBounded where
   type Rep VBounded = Int
   index (VBounded v) i = v V.! (i `mod` gridSize)
   tabulate desc = VBounded $ V.generate gridSize desc
 
+
 type Grid a = Store (Compose VBounded VBounded) a
 type Coord = (Int, Int)
 type Code = [Bool]
+
 
 code :: Code
 code = (=='#') <$> "#.#.#.#.#......#.#.#.#.##..#.##.##..#..##...#.#.#.#...##.##.##.###....#..#...#.#..###.#...#..##.#.###..#..####.###...#.#.#..##..##.##..##..###..#....#.#....#####.#...###...#.#....###...#..##.##..#..#.##..###..#.##.###..#.####...#.##.....#.###...#.##.##.#.#######...#.###..##..##..#.#.#.#####...#....#.....##.#.#...##.######....#..#......#.#.#.#.##...######.#.#####..#####..#.#.#.#.###.#.#....#..##..#..#.#.#..##....##..#.#.......##...#..####.####.#.#..#.###..#...#......###...#...#.##.#.####..#.#....###.####..#."

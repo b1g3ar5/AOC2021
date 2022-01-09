@@ -67,6 +67,7 @@ module Utils (
   , Monoid(..)
   , bool
   , fix
+  , timeIt
 )
 where
 

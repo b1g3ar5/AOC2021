@@ -9,7 +9,7 @@ My solutions try to be neat and I'm hoping understandable. If I look at the code
 I have 3 which take longer than 5 seconds:
 
 Day20 - applying a filter to a 150x150 grid which takes 8 seconds using the Store comonad
-         (see https://chrispenner.ca/posts/conways-game-of-life)
+         (see https://chrispenner.ca/posts/conways-game-of-life), it's neat but slow
 
 Day23 - a Dijkstra search to find the solution of a little game which takes 10 seconds
 
@@ -26,7 +26,7 @@ Day11 - a grid of octopuses, I might use Store next time as I did in Day20
 
 Day12 - counting paths through a graph solved initially with a dfs and then re-solved with a hylomorphism
 
-Day18 - tree manipulation, I think this could be neatened up a lot with morphisms ?!
+Day18 - tree manipulation, I wrote a second morhpism version ...
 
 Day19 - so complicated that I had to write a separate code file for the frames of the scanners...
 
