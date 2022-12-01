@@ -48,34 +48,34 @@ Day12 as a hylomorphism?
 
 libMain :: IO ()
 libMain = do
-  timeIt day1
-  timeIt day2
-  timeIt day3
-  timeIt day4
-  timeIt day5 
-  timeIt day6
-  timeIt day7
-  timeIt day8
+  --timeIt day1
+  --timeIt day2
+  --timeIt day3
+  --timeIt day4
+  --timeIt day5 
+  --timeIt day6
+  --timeIt day7
+  --timeIt day8
   timeIt day9
-  timeIt day10
-  timeIt day11
-  timeIt day12
-  timeIt day13
-  timeIt day14
-  timeIt day15  -- 5s
-  timeIt day16
-  timeIt day17
-  timeIt day18
-  timeIt day18b
-  timeIt day19
-  timeIt day20 -- 8s
+  --timeIt day10
+  --timeIt day11
+  --timeIt day12
+  --timeIt day13
+  --timeIt day14
+  --timeIt day15  -- 5s
+  --timeIt day16
+  --timeIt day17
+  --timeIt day18
+  --timeIt day18b
+  --timeIt day19
+  --timeIt day20 -- 8s
   --timeIt day20b
   --timeIt day20c
-  timeIt day21
-  timeIt day22
-  timeIt day23 -- 10s
-  timeIt day24
-  timeIt day25 -- 11s
+  --timeIt day21
+  --timeIt day22
+  --timeIt day23 -- 10s
+  --timeIt day24
+  --timeIt day25 -- 11s
 
 
 

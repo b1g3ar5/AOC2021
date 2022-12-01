@@ -2,6 +2,7 @@
 
 module Day20c where
 
+{-
 
 import Utils hiding (Coord)
 import Data.Grid
@@ -68,3 +69,4 @@ day20c = do
   return ()
 
 
+-}

@@ -87,8 +87,6 @@ showTree = cata alg
 
 explode :: Tree -> Maybe Tree
 explode t = fst <$> para explodeAlg t
-
-
 explodeAlg :: TreeF (Tree, Maybe (Tree, (Int, Int))) -> Maybe (Tree, (Int, Int))
 explodeAlg (Leaf x) = Nothing
 explodeAlg (Tree lvl (shortCircuitLeft, mrl) (shortCircuitRight, mrr))
@@ -105,8 +103,6 @@ explodeAlg (Tree lvl (shortCircuitLeft, mrl) (shortCircuitRight, mrr))
 
 split :: Tree -> Maybe Tree
 split = para splitAlg
-
-
 splitAlg :: TreeF (Tree, Maybe Tree) -> Maybe Tree
 splitAlg (Leaf (n,x)) = if x > 9 then Just $ Fix $ Tree n (Fix $ Leaf (n+1, d2)) (Fix $ Leaf (n+1, d2 + if even x then 0 else 1)) else Nothing
   where

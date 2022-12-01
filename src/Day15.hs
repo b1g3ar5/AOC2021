@@ -13,6 +13,7 @@ import Data.Type.Bool (Not)
 
 type Grid = Map Coord Dist
 type Dist = Maybe Int
+-- State is: Grid, pipeline, visited, finishPred
 type State = (Grid, Heap Dist Coord, Set Coord, Coord -> Bool)
 
 
