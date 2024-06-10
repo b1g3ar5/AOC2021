@@ -11,9 +11,23 @@ packages:
       size: 687
   original:
     hackage: memoize-1.1.1
+- completed:
+    hackage: tardis-0.5.0@sha256:9eb3e42b73073686c5e5d0f35304f0dac3f7ad474c6b7aae0b44f9f7eb9b3003,1617
+    pantry-tree:
+      sha256: c4d26f3872c3d5e8ff59fca06dc41dc9213b92f67a94d217d054cb47c2cd6726
+      size: 573
+  original:
+    hackage: tardis-0.5.0
+- completed:
+    hackage: smtp-mail-0.4.0.0@sha256:cabcf06e2b141c00afb14859ee577a5ffcbb7b32a878ef6c26256798f91dafde,1307
+    pantry-tree:
+      sha256: bfe9576d913ce15a39b713f20dfc1656686d00a8e58fac8f325c600f44ba658a
+      size: 450
+  original:
+    hackage: smtp-mail-0.4.0.0
 snapshots:
 - completed:
-    sha256: 5cacb39a2c21842535dc0a31e2005d3b1eb18e451a89d58c28381e1efdb9520f
-    size: 647983
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/11/12.yaml
-  original: nightly-2022-11-12
+    sha256: 28a863b358647f2d952fe7085ba11561aeb63eca6bc6fd1ce8fcf1cfe63717f5
+    size: 719127
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/22/24.yaml
+  original: lts-22.24

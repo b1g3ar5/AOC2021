@@ -10,7 +10,6 @@ default-extensions: ViewPatterns, TupleSections, GADTs, BangPatterns, RankNTypes
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 description: Please see the README on GitHub at <https://github.com/b1g3ar5/AOC2021/blob/master/README.md>
 
@@ -45,7 +44,6 @@ dependencies:
 - MissingH
 - pqueue
 - heap
-#- grids
 
 library:
   source-dirs: src

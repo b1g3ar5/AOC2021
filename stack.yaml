@@ -1,4 +1,9 @@
-resolver: nightly-2022-11-12
+system-ghc: true
+install-ghc: false
+allow-newer : true
+
+
+resolver: lts-22.24
 
 packages:
 - .
@@ -6,10 +11,6 @@ packages:
 - ../../../Clever
 
 extra-deps:
-#- repa-3.4.1.4@sha256:df02acc0f65be7ff67cf71058841644425337c5ebd44c95b1ac1564a1e3c4858,3323
-#- repa-io-3.4.1.1@sha256:083d8d66559c77078a50ed94130969a784489d944818ddd5bc000e1584fa2bed,1274
-#- sized-grid-0.2.0.1@sha256:f269a9a658a66d5b9925f22c163b61c62a041670bfcb84a8748a969ceeb5dc9c,2687
 - memoize-1.1.1
-#- MissingH-1.4.3.0
-#- grids-0.5.0.1
-#- random-1.2.1
+- tardis-0.5.0
+- smtp-mail-0.4.0.0
